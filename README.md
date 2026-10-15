@@ -1,12 +1,21 @@
 # moderne_softwareentwicklung_gruppe_13
 
-## Was ist Git und warum sollte es verwendet werden?
+## Was ist Git
 
-Git speichert jeden Stand eines Projekts als _Commit_: eine vollständige Momentaufnahme, die über einen Hash ihres Inhalts eindeutig identifiziert wird und so eine unveränderliche Historie bildet. Textdateien vergleicht Git zeilenweise. Änderungen erscheinen als _Hunks_, also Blöcke geänderter Zeilen, die man mit `git add -p` einzeln in Commits übernehmen kann und die Git beim Mergen automatisch zusammenführt, solange sie nicht dieselben Zeilen betreffen.
+Git ist ein verteiltes Versionskontrollsystem initiiert von Linux Torvalds. Git speichert jeden Stand eines Projekts als *Commit*: eine vollständige Momentaufnahme, die über einen Hash ihres Inhalts eindeutig identifiziert wird und so eine nachvollziehbare Historie bildet. **Git ist nicht GitHub**, git ist das lokale Programm und GitHub oder auch GitLab sind die Anbieter von zentralen Repositories.
 
-Jeder Klon enthält das komplette Repository, gearbeitet wird lokal und mit `git push` und `git pull` synchronisiert, meist über SSH mit einem hinterlegten Schlüssel. Jeder Commit trägt die E-Mail-Adresse seines Autors (`git config user.email`). Ursprünglich wurden Änderungen sogar per E-Mail als Patches ausgetauscht (`git format-patch`, `git send-email`, `git am`), was beim Linux-Kernel bis heute üblich ist.
+Ein repository ist das Arbeitsverzeichnis mit dem Index der im versteckten Verzeichnis `.git` liegt. Der Index ist ein gerichteter azyklischer Graph (*Directed Acyclic Graph*, DAG) in dem die Commits mit ihren Hashwerten festgehalten werden. Ein Commit ist ein Datensatz an Änderungen, welcher im `.git`-Verzeichnis abgelegt wird. Der Index hält eine Referenz auf jeden Commit und bildet den DAG. `Directed` heißt, dass jeder commit auf seine Eltern verweist, aber nichts von seinen Nachfolgern weiß. `Azyklisch` bedeutet, dass die commits nie einen Kreis bilden können und `Graph` bedeutet dass ein commit nur einen Vorgänger aber mehrere Nachfolger haben kann.
 
-Durch die unveränderliche Historie kann man sich bei der Verwendung von git darauf verlassen, dass jede Änderung auch wieder Rückgängig gemacht werden kann. `git log` z.B. zeigt die Historie des aktuellen Verzeichnisses an. Wenn also eine Änderung einen Fehler mitbringt, kann man mit dem Befehl `git revert HEAD` die letzte Änderung rückgängig machen. Für das Verteilte Arbeiten bringt es den Vorteil, dass git ein Hash-Graph ist und jeder Commit einen Vorgänger-Commit hat (ähnlich einer Blockchain). Wenn die Änderungen eines Kollegen oder einer Kollegin in den eigenen übertragen werden sollen und die Änderungen sich nicht gegenseitig betreffen, der Hash-Graph mit einem `git rebase` zusammengeführt werden.
+Die Stärke von git liegt in der Arbeit mit Textdateien. Diese vergleicht git zeilenweise, Änderungen erscheinen als `hunks`, also Blöcke geänderter Zeilen, welche man in commits übernehmen kann. Diese commits können in einem eigenen branch gesammelt werden und mit einem merge wieder in einen Ursprungsbranch eingefügt werden.
+
+Ein repository kann lokal genutzt werden oder aber man benutzt das repository verteilt. Dabei kann ein zentrales repository auf einem Server wie `GitHub` genutzt werden. Ein repository kann dann von jedem geklont werden. Jeder Klon enthält das komplette Repository, gearbeitet wird im Klon lokal und die commits werden anschließend synchronisiert. Das geschieht heutzutage meist über SSH oder HTTPS.
+
+## Warum sollte es verwendet werden
+
+- **Nachvollziehbarkeit und Integrität:** Jede Änderung ist mit Autor, Zeitpunkt und Begründung festgehalten und durch die Hash-Verkettung gegen unbemerkte Manipulation geschützt. Commits und Tags lassen sich zusätzlich mit GPG oder SSH signieren.
+- **Änderungen sind umkehrbar:** `git revert <commit>` erzeugt einen neuen Commit, der die Änderungen eines alten umkehrt, ohne die Historie umzuschreiben. Selbst Commits, auf die kein Branch mehr zeigt (z. B. nach einem `reset` oder `rebase`), bleiben über `git reflog` noch eine Zeit lang auffindbar, bevor die Garbage Collection sie entfernt. Nicht geschützt ist dagegen, was nie committet wurde: Änderungen im Arbeitsverzeichnis gehen z. B. durch `git reset --hard` endgültig verloren.
+- **Verteiltes Arbeiten:** Jeder Klon enthält das vollständige Repository samt Historie. Man kann offline arbeiten, und jeder Klon ist ein Backup. Da Objekte über ihren Inhalt adressiert werden, haben sie in jedem Klon denselben Hash. Synchronisieren (`git fetch`, `git push`) bedeutet daher nur, die fehlenden Objekte zu übertragen und Refs zu aktualisieren. Anders als bei zentralen Systemen wie SVN braucht man dafür keinen Server als einzige Quelle der Wahrheit; Plattformen wie GitHub sind lediglich ein vereinbarter gemeinsamer Remote.
+- **Paralleles Arbeiten:** Weil Branches nur Zeiger sind und Merges über die Merge-Base im DAG funktionieren, sind Feature-Branches, Code-Reviews per Pull Request und Workflows wie Trunk-based Development oder Git Flow einfach umzusetzen.
 
 ## Grundlegende Git-Befehle
 
@@ -133,11 +142,7 @@ unterschiedlich bearbeitet wurde.
    Konfliktmarker ein, die wie folgt aussehen:
 
 ```text
-<<<<<<< HEAD
 Dein Code im aktuellen Branch
-=======
-Der Code aus dem Branch, den du mergen wolltest
->>>>>>> <feature-branch-name>
 ```
 
 3. **Entscheidung treffen:** Lösche die Marker (`<<<<<<<`, `=======`, `>>>>>>>`)
