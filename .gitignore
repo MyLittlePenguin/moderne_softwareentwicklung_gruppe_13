@@ -1,1 +1,63 @@
-# Kommentar
+# .gitignore – Semesterprojekt „Moderne Softwareentwicklung“
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Ausnahme: Maven-Wrapper-JAR zulassen, falls diese
+# Wrapper-Variante im Projekt verwendet wird.
+!.mvn/wrapper/maven-wrapper.jar
+
+# Absturz-Logs der Java-VM
+hs_err_pid*
+replay_pid*
+
+# Maven-Build-Verzeichnisse
+# Ohne führenden "/" greift die Regel auch in Unterordnern,
+# beispielsweise bei backend/target/.
+target/
+
+# IntelliJ IDEA
+out/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+bin/
+.classpath
+.project
+.settings/
+.factorypath
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Sicherungskopien von Editoren
+*~
+
+# Logs und temporäre Dateien
+*.log
+*.tmp
+
+
+# .env* erfasst .env, .env.local, .env.production und auch .env.example.
+# Die Ausnahme erlaubt .env.example als gemeinsame Vorlage.
+.env*
+!.env.example
+application-local.properties
+
+# Testdatenbanken jeder Person bleiben lokal.
+*.db
+*.sqlite
