@@ -88,11 +88,11 @@ Hauptbranch (meist `master` oder `main`) zu gefährden.
   git branch <branch-name>
   ```
 - **Zu einem anderen Branch wechseln:**
-  *(Empfohlen: Die moderne Syntax mit `git switch`, alternativ geht auch `git checkout`)*
+  _(Empfohlen: Die moderne Syntax mit `git switch`, alternativ geht auch `git checkout`)_
   ```bash
   git switch <branch-name>
   ```
-- **Branch erstellen und *sofort* dorthin wechseln:**
+- **Branch erstellen und _sofort_ dorthin wechseln:**
   ```bash
   git switch -c <branch-name>
   ```
@@ -105,14 +105,19 @@ Hauptbranch integrieren möchtest, nutzt du `git merge`.
 **Ablauf:**
 
 1. Wechsle in den Zielbranch (meistens `main`):
+
 ```bash
 git switch main
 ```
+
 2. Hole dir eventuelle Updates vom Remote-Server:
+
 ```bash
 git pull
 ```
+
 3. Führe den Feature-Branch in den aktuellen Branch zusammen:
+
 ```bash
 git merge <feature-branch-name>
 ```
@@ -129,33 +134,31 @@ unterschiedlich bearbeitet wurde.
 #### Schritte zur Lösung eines Merge-Konflikts:
 
 1. **Konflikt erkennen:**
-Beim Versuch des Mergens bricht Git ab und markiert die betroffenen Dateien.
-Wenn du `git status` eingibst, siehst du die Konfliktdateien.
+   Beim Versuch des Mergens bricht Git ab und markiert die betroffenen Dateien.
+   Wenn du `git status` eingibst, siehst du die Konfliktdateien.
 
 2. **Datei öffnen und bereinigen:**
-Öffne die betroffene Datei in deinem Editor (z. B. VS Code oder NVIM). Git fügt dort
-Konfliktmarker ein, die wie folgt aussehen:
+   Öffne die betroffene Datei in deinem Editor (z. B. VS Code oder NVIM). Git fügt dort
+   Konfliktmarker ein, die wie folgt aussehen:
 
 ```text
-<<<<<<< HEAD
 Dein Code im aktuellen Branch
-=======
-Der Code aus dem Branch, den du mergen wolltest
->>>>>>> <feature-branch-name>
 ```
 
 3. **Entscheidung treffen:** Lösche die Marker (`<<<<<<<`, `=======`, `>>>>>>>`)
-und passe den Code so an, wie er am Ende aussehen soll (entweder Variante A,
-Variante B oder eine Kombination aus beidem).
+   und passe den Code so an, wie er am Ende aussehen soll (entweder Variante A,
+   Variante B oder eine Kombination aus beidem).
 
 4. **Änderungen vormerken:**
-Nachdem du den Konflikt bereinigt hast, fügst du die Datei wieder zum Staging hinzu:
+   Nachdem du den Konflikt bereinigt hast, fügst du die Datei wieder zum Staging hinzu:
+
 ```bash
 git add <dateiname>
 ```
 
 5. **Merge abschließen:**
-Schließe den Vorgang mit einem Commit ab:
+   Schließe den Vorgang mit einem Commit ab:
+
 ```bash
 git commit -m "Merge Konflikt in <dateiname> behoben"
 ```
@@ -179,13 +182,15 @@ auszuchecken.
 #### Wichtige Worktree-Befehle:
 
 - **Aktive Worktrees anzeigen:**
-Listet alle verknüpften Arbeitsverzeichnisse und die dort ausgecheckten Branches auf.
+  Listet alle verknüpften Arbeitsverzeichnisse und die dort ausgecheckten Branches auf.
+
 ```bash
 git worktree list
 ```
 
 - **Neuen Worktree erstellen:**
-Erstellt einen neuen Ordner auf deiner Festplatte und checkt dort direkt einen bestehenden (oder mit `-b` einen neuen) Branch aus.
+  Erstellt einen neuen Ordner auf deiner Festplatte und checkt dort direkt einen bestehenden (oder mit `-b` einen neuen) Branch aus.
+
 ```bash
 # Beispiel: Erstellt einen Ordner "../hotfix" und checkt dort den Branch "hotfix-branch" aus
 git worktree add ../hotfix hotfix-branch
@@ -195,14 +200,26 @@ git worktree add -b neuer-branch ../neuer-ordner
 ```
 
 - **Worktree entfernen:**
-Wenn du mit der Arbeit im Worktree fertig bist, kannst du ihn wieder löschen (die Commits bleiben natürlich erhalten).
+  Wenn du mit der Arbeit im Worktree fertig bist, kannst du ihn wieder löschen (die Commits bleiben natürlich erhalten).
+
 ```bash
 git worktree remove ../hotfix
 ```
 
 ## Git mit IntelliJ/PyCharm benutzen: Local Repository und Remote Repository
 
+- Local Repository (lokales Repository) enthält die komplette Historie (alle Commits) des Software-Projekts, die direkt auf dem eigenen Computer gespeichert ist.
+- Ein Remote Repository enthält die komplette Historie (alle Commits) des Projekts, die auf einem Server im Internet oder in einem Netzwerk liegt. Praktisch für die Arbeit im Team.
+- Eine IDE wie IntelliJ IDEA ist für die Arbeit mit Repositories praktisch:
+  - weil sie eine eingebaute, visuelle Benutzeroberfläche (GUI) für Git besitzt. Man ist nicht auf Befehle im Terminal angewiesen. Man kann z.B. lokale Dateien per Mausklick mit dem Stand im remote Repository vergleichen (Diff-Ansicht), bevor man Änderungen hochlädt.
+  - Selbst wenn man vergisst, Git-Commit zu machen, zeichnet IntelliJ eine eigene, unabhängige Historie der Änderungen auf (Local History). So kann man versehentlich gelöschten Code fast immer retten.
+  - Die IDE kann uns automatisch vor Merge-Konflikte warnen.
+  - Tippfehler sind fast unmöglich: Wir müssen keine langen Branch-Namen oder Remote-URLs eintippen.
+  - Ein Klick auf die blauen Pfeil (Pull) oder den grünen Pfeil (Push) genügt.
+
 ## Nützliche Git-Tools und Plattformen (z. B. GitHub)
+
+Zum Beispiel auf Plattformen wie GitHub, GitLab oder Bitbucket.
 
 ## Arbeitsanteile
 
@@ -210,4 +227,5 @@ git worktree remove ../hotfix
 **Grundlegende Git-Befehle:** Ronny Krone, Ostfalia (70462294)\
 **Branches und ihre Nutzung, Umgang mit Merge-Konflikten:** Ronny Krone\
 **Git mit IntelliJ/PyCharm benutzen:** Hassan Mahmoud, ()\
+
 **Nützliche Git-Tools und Plattformen:** Hassan Mahmoud\
