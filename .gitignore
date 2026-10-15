@@ -1,72 +1,63 @@
-# =====================================================================
 # .gitignore – Semesterprojekt „Moderne Softwareentwicklung“
-# Sprache: Java (Kickoff, Folie 10) · Build: Maven · IDEs: IntelliJ / Eclipse / VS Code
-# Regel: Ins Repo kommt nur, was man NICHT aus dem Quellcode neu
-#        erzeugen kann und was für ALLE im Team gleich ist.
-# =====================================================================
 
-# --- 1. Kompilierte Java-Dateien ----------------------------------------
-# Entstehen beim Bauen aus den .java-Dateien -> jederzeit neu erzeugbar
+# Java
 *.class
 *.jar
 *.war
 *.ear
-# Ausnahme: Der Maven-Wrapper MUSS ins Repo, damit alle dieselbe Maven-Version nutzen
+
+# Ausnahme: Maven-Wrapper-JAR zulassen, falls diese
+# Wrapper-Variante im Projekt verwendet wird.
 !.mvn/wrapper/maven-wrapper.jar
 
 # Absturz-Logs der Java-VM
 hs_err_pid*
 replay_pid*
 
-# --- 2. Build-Ausgaben (Maven) --------------------------------------------
-# Team hat sich für Maven entschieden (13.10.)
-# Ohne führenden "/" -> greift auch in Unterordnern wie backend/target/
+# Maven-Build-Verzeichnisse
+# Ohne führenden "/" greift die Regel auch in Unterordnern,
+# beispielsweise bei backend/target/.
 target/
-# IntelliJ ohne Maven-Build
-out/
-# Eclipse
-bin/
 
-# --- 3. IDE-Einstellungen (persönlich, je Rechner verschieden) -----------
 # IntelliJ IDEA
+out/
 .idea/
 *.iml
 *.iws
 *.ipr
-# Eclipse – und VS Code! Die Java-Erweiterung von VS Code (Red Hat) nutzt
-# intern den Eclipse-Compiler (JDT) und legt diese Dateien ebenfalls an.
+
+# Eclipse
+bin/
 .classpath
 .project
 .settings/
 .factorypath
-# VS Code (gemeinsame Empfehlungen dürfen rein, persönliche Settings nicht)
+
+# Visual Studio Code
 .vscode/*
 !.vscode/extensions.json
 
-# --- 4. Betriebssystem-Dateien -------------------------------------------
 # macOS
 .DS_Store
+
 # Windows
 Thumbs.db
-# Windows
 desktop.ini
-# Linux-Backupdateien
+
+# Sicherungskopien von Editoren
 *~
 
-# --- 5. Logs und temporäre Dateien ---------------------------------------
+# Logs und temporäre Dateien
 *.log
 *.tmp
 
-# --- 6. Geheimnisse – NIE ins Repo! --------------------------------------
-# Passwörter, API-Keys (z. B. für ein LLM), Datenbank-Zugänge
-# .env* erfasst .env, .env.local, .env.production, ... (und leider auch .env.example)
+
+# .env* erfasst .env, .env.local, .env.production und auch .env.example.
+# Die Ausnahme erlaubt .env.example als gemeinsame Vorlage.
 .env*
-# Ausnahme: Die Vorlage OHNE echte Werte soll ins Repo -> "!" holt sie zurück.
-# Muss NACH .env* stehen, weil bei Git die letzte passende Regel gewinnt.
 !.env.example
 application-local.properties
 
-# --- 7. Lokale Datenbanken (Entscheidung im Team) ------------------------
-# Falls ihr SQLite nutzt: Testdaten jeder Person bleiben lokal
+# Testdatenbanken jeder Person bleiben lokal.
 *.db
 *.sqlite
