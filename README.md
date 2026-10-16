@@ -223,7 +223,7 @@ Zum Beispiel auf Plattformen wie GitHub, GitLab oder Bitbucket.
 
 ## Arbeitsanteile
 
-**Was ist Git und warum sollte es verwendet werden?:** Timo Kramer, ()\
+**Was ist Git und warum sollte es verwendet werden?:** Timo Kramer, TH Brandenburg (20119022)\
 **Grundlegende Git-Befehle:** Ronny Krone, Ostfalia (70462294)\
 **Branches und ihre Nutzung, Umgang mit Merge-Konflikten:** Ronny Krone\
 **Git mit IntelliJ/PyCharm benutzen:** Hassan Mahmoud, ()\
