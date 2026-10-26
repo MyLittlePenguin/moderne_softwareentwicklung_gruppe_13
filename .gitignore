@@ -61,3 +61,6 @@ application-local.properties
 # Testdatenbanken jeder Person bleiben lokal.
 *.db
 *.sqlite
+
+# ronnys zeugs
+build.ml
