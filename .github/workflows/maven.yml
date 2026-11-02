@@ -26,7 +26,7 @@ jobs:
           java-version: "25"
           distribution: "temurin"
           cache: maven
-          directory: votee_backend
+
       - name: Run tests
         run: mvn test
       - name: Build with Maven
