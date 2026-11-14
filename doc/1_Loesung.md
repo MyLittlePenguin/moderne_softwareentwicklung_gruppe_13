@@ -1,4 +1,6 @@
-# moderne_softwareentwicklung_gruppe_13
+*Master Medieninformatik (online) // Moderne Softwareentwicklung // Übungen*
+
+# Lösung zu Übung 1 (Git-Handout)
 
 ## Was ist Git
 
