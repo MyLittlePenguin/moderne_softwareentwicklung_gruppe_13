@@ -63,10 +63,8 @@
   definierte Schnittstellen. Punkt 4 der Strategie in [3_Uebung.md](3_Uebung.md) ist entsprechend angepasst.
 - **Teststrategie klargestellt (a2).** Den Widerspruch in Punkt 5 („nur die Domain-Logik … somit nur
   die Adapter“) hat das LLM zu Recht gefunden. Gemeint war die Trennung, die wir in Aufgabe 2 schon
-  umsetzen: Domänentests laufen ohne Framework und ohne Datenbank. Falls wir das Gefühl haben, dass
-  wir Anwendungsservices testen sollten, nutzen wir ein In-Memory-Repository mit Hilfe einer
-  H2-In-Memory-Datenbank und mit Helidons `@ServerTest` für HTTP, wie es `MainTest` bereits zeigt.
-  Die Anwendungsservices hatte das LLM nicht berücksichtigt; diese Ebene haben wir ergänzt.
+  umsetzen: Domänentests laufen ohne Framework und ohne Datenbank. Integrationstests schreiben wir nur
+  bei Bedarf und dann mit einer In-Memory-Datenbank und mit Helidons `@ServerTest` für HTTP.
 
 <!-- Domain-Events (mind. 2), angepasste Entwicklungsstrategie, übernommene/abgelehnte LLM-Vorschläge (ca. 5–6 Sätze) -->
 
