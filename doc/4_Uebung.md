@@ -2,6 +2,59 @@
 
 ## 1. Review der Implementierungsstrategie
 
+**Gegenstand:** Implementierungsstrategie, Domänenmodell, Services und Bounded Contexts aus
+[3_Uebung.md](3_Uebung.md).
+
+### (a) Schwachstellen der Strategie
+
+1. **Event-Namen passen nicht zum Board.** Die Strategie nennt „Bürgerin erstellt“, das Board
+   „Bürger registriert“. „Abstimmung abgeschlossen“ gibt es auf dem Board nicht, dort stehen nur die
+   Policy „Nach Fristablauf“ und „Ergebnis angezeigt“.
+2. **Widerspruch in der Teststrategie.** „Wir testen nur die Domain-Logik. Wir testen somit nur die
+   Adapter.“ Sinnvoll wären reine Unit-Tests ohne Framework für die Domäne und wenige
+   Integrationstests für die Adapter (H2-Repository, HTTP).
+3. **Paketstruktur widerspricht Punkt 4.** Laut Einrückung liegen `domain`, `application` und
+   `infrastructure` neben `abstimmungsverwaltung` statt darunter. Stimmabgabe, Kontoverwaltung und
+   Abstimmungsansicht fehlen ganz.
+4. **Anonymität vs. „nur einmal wählen“.** Die Stimme soll keinen Bezug zum Bürger haben, aber
+   `stimmeAb(abstimmungsId, abstimmOption, buergerinnenId)` und die Beziehung Bürgerin–Stimmabgabe im
+   Domänenmodell koppeln beides. Vorschlag: eine **Teilnahme** (wer hat gewählt, sichert „nur
+   einmal“) getrennt von der anonymen **Stimme** (was wurde gewählt).
+5. **AbstimmungsService ist kein Domain Service.** Er lädt und speichert über das Repository und ist
+   damit ein Anwendungsservice. Ein Domain Service wäre z. B. „E-Mail nur einmal je Kontoart“.
+6. **Unklar, wer „Abstimmung beendet“ auslöst.** Ohne Scheduler ist es einfacher, den Status aus dem
+   Abstimmungszeitraum und einer injizierten `Clock` abzuleiten, statt ein Event aktiv auszulösen.
+
+### (b) Strukturierung der Domain-Events
+
+- **Einheitliche Namen** in der Vergangenheitsform, je einem Context zugeordnet:
+
+  | Context               | Events                                   |
+  | --------------------- | ---------------------------------------- |
+  | Kontoverwaltung       | `BuergerRegistriert`, `ZweiFaktorAktiviert` |
+  | Abstimmungsverwaltung | `AbstimmungErstellt`, `AbstimmungBeendet`   |
+  | Stimmabgabe           | `StimmeAbgegeben`                           |
+
+- **„Ergebnis angezeigt“ und „Authentifiziert“ streichen.** Das Anzeigen ist eine Abfrage, keine
+  fachliche Zustandsänderung, und die Authentifizierung ist technisch. Falls fachlich relevant, besser
+  `ErgebnisFestgestellt`.
+- **Payload nur mit IDs und dem Nötigsten:** `AbstimmungErstellt(abstimmungId, zeitraum, optionIds)`,
+  `StimmeAbgegeben(abstimmungId, optionId)` ohne Bürger-ID.
+- **Wichtigste Events:** `AbstimmungErstellt`, `StimmeAbgegeben`, `AbstimmungBeendet`.
+
+### (c) Entwicklungsreihenfolge
+
+1. **Durchstich pro Event statt Schicht für Schicht:** Value Objects und Entities → Repository-Port →
+   Anwendungsservice mit In-Memory-Repository → erst dann der H2-Adapter. So sind Service und Regeln
+   testbar, bevor es eine Datenbank gibt.
+2. **Mit dem Kern beginnen:** `AbstimmungErstellt` → `StimmeAbgegeben` → `AbstimmungBeendet` mit
+   Ergebnis.
+3. **Kontoverwaltung zuletzt.** Sie ist eine generische Subdomäne. Bis dahin genügt ein Fake hinter der
+   Schnittstelle `IstVa`/`IstBuerger` (die VA ist ohnehin ein fester Superuser, dazu ein Test-Bürger).
+   Die Schnittstelle existiert von Anfang an, damit die Authentifizierung nicht nachträglich
+   eingebaut werden muss.
+4. **Zwei-Faktor ganz am Ende:** fachlich am wenigsten wert, technisch am aufwändigsten.
+
 <!-- Domain-Events (mind. 2), angepasste Entwicklungsstrategie, übernommene/abgelehnte LLM-Vorschläge (ca. 5–6 Sätze) -->
 
 ## 2. Testfälle mit LLM generieren und validieren (TDD Schritt 1)
