@@ -65,6 +65,10 @@
   die Adapter“) hat das LLM zu Recht gefunden. Gemeint war die Trennung, die wir in Aufgabe 2 schon
   umsetzen: Domänentests laufen ohne Framework und ohne Datenbank. Integrationstests schreiben wir nur
   bei Bedarf und dann mit einer In-Memory-Datenbank und mit Helidons `@ServerTest` für HTTP.
+- **Domain-Events und Reihenfolge (b, c).** Die wichtigsten Domain-Events sind `AbstimmungErstellt`
+  und `StimmeAbgegeben`, dazu `AbstimmungBeendet`. Die Umsetzung erfolgt als Durchstich pro Event in
+  dieser Reihenfolge, beginnend mit `AbstimmungErstellt`. Die Kontoverwaltung kommt zuletzt, weil die
+  VA ein fester Superuser ist und die Tests aus Aufgabe 2 als Ersteller nur eine `NutzerId` brauchen.
 
 <!-- Domain-Events (mind. 2), angepasste Entwicklungsstrategie, übernommene/abgelehnte LLM-Vorschläge (ca. 5–6 Sätze) -->
 
