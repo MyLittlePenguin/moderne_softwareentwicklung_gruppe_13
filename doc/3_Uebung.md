@@ -134,6 +134,45 @@ classDiagram
     Stimmabgabe "1" -- "1" AbstimmOption
 ```
 
+## Bounded Contexts
+
+```mermaid
+flowchart LR
+    subgraph kontoverwaltung ["Kontoverwaltung"]
+        direction TB
+        K1["Bürgerin"]
+        K2["VerwaltungsAngestellte"]
+        K3["Bürger registriert<br/>Zwei-Faktor aktiviert<br/>Authentifiziert"]:::event
+    end
+
+    subgraph abstimmungsverwaltung ["Abstimmungsverwaltung"]
+        direction TB
+        V1["Abstimmung<br/>AbstimmOption<br/>Abstimmungszeitraum"]
+        V2["Abstimmung erstellt"]:::event
+    end
+
+    subgraph stimmabgabe ["Stimmabgabe"]
+        direction TB
+        S1["Stimmabgabe"]
+        S2["Stimme abgegeben"]:::event
+    end
+
+    subgraph abstimmungsansicht ["Abstimmungsansicht"]
+        direction TB
+        R1["Abstimmungsergebnis"]
+        R2["Ergebnis angezeigt"]:::event
+    end
+
+    kontoverwaltung -- "Rolle (IstVa)" --> abstimmungsverwaltung
+    kontoverwaltung -- "Rolle (IstBuerger)" --> stimmabgabe
+    abstimmungsverwaltung -- "AbstimmungId, Zeitraum, Optionen" --> stimmabgabe
+    stimmabgabe -- "Stimmen nach Fristablauf" --> abstimmungsansicht
+
+    classDef box fill:#fff,stroke:#000,color:#000
+    classDef event fill:#ffb74d,stroke:#ef6c00,color:#000
+    class kontoverwaltung,abstimmungsverwaltung,stimmabgabe,abstimmungsansicht box
+```
+
 ## Domain Services und Repositories
 
 ### Services
