@@ -145,7 +145,8 @@ classDiagram
    Helidon als Webserver und für die Infrastruktur um JDBC zu verwenden.
    Wir nutzen Dependency Injection. Organisieren unser Projekt in der
    Hexagonalen Architektur und definieren für die Repositories Interfaces.
-   Wir testen nur die Domain-Logik. Wir testen somit nur die Adapter.
+   Die Domänenlogik testen wir mit reinen Unit-Tests, die Anwendungsservices
+   mit einem In-Memory-Repository und die Adapter mit wenigen Integrationstests.
 
 
 ## Paketstruktur
