@@ -1,3 +1,69 @@
+## Event Storming
+
+```mermaid
+flowchart LR
+    subgraph board ["Board: Domain Events"]
+        direction LR
+
+        subgraph va_konto [" "]
+            direction TB
+            A1["Verwaltungsangestellte (VA)"]:::actor --> C1["VA-registrierung"]:::command
+            C1 --> E1["VA registriert"]:::event
+            E1 --> A2["VA"]:::actor
+            A2 --> C2["Zwei-Faktor aktivieren"]:::command
+            C2 --> E2["Zwei-Faktor aktiviert"]:::event
+        end
+
+        subgraph va_abstimmung [" "]
+            direction TB
+            A3["VA"]:::actor --> C3["Authentifizierung"]:::command
+            C3 --> E3["Authentifiziert"]:::event
+            E3 --> A4["VA"]:::actor
+            A4 --> C4["Abstimmung erstellen"]:::command
+            C4 --> E4["Abstimmung erstellt"]:::event
+        end
+
+        subgraph buerger_konto [" "]
+            direction TB
+            A5["Bürger/Nutzer"]:::actor --> C5["Bürgerregistrierung"]:::command
+            C5 --> E5["Bürger registriert"]:::event
+            E5 --> A6["Bürger/Nutzer"]:::actor
+            A6 --> C6["Zwei-Faktor aktivieren"]:::command
+            C6 --> E6["Zwei-Faktor aktiviert"]:::event
+        end
+
+        subgraph buerger_abstimmung [" "]
+            direction TB
+            A7["Bürger/Nutzer"]:::actor --> C7["Abstimmung"]:::command
+            C7 --> E7["Stimme abgegeben"]:::event
+            E7 --> P1["Nach Fristablauf"]:::policy
+            P1 --> A8["Bürger/Nutzer"]:::actor
+            A8 --> C8["Ergebnis einsehen"]:::command
+            C8 --> E8["Ergebnis angezeigt"]:::event
+        end
+
+        va_konto ~~~ va_abstimmung ~~~ buerger_konto ~~~ buerger_abstimmung
+    end
+
+    subgraph legende ["Legende"]
+        direction TB
+        L1["Akteur"]:::actor
+        L2["Command"]:::command
+        L3["Event (in Vergangenheitsform)"]:::event
+        L4["Policy"]:::policy
+    end
+
+    board ~~~ legende
+
+    classDef box fill:#fff,stroke:#000,color:#000
+    class board,va_konto,va_abstimmung,buerger_konto,buerger_abstimmung,legende box
+
+    classDef actor fill:#fff176,stroke:#c9b800,color:#000
+    classDef command fill:#90caf9,stroke:#1e88e5,color:#000
+    classDef event fill:#ffb74d,stroke:#ef6c00,color:#000
+    classDef policy fill:#ce93d8,stroke:#8e24aa,color:#000
+```
+
 ## Domainmodel
 
 ```mermaid
@@ -66,6 +132,45 @@ classDiagram
     Bürgerin "0..n" -- "0..n" Stimmabgabe: gibt ab
     Stimmabgabe "0..n" -- "1" Abstimmung
     Stimmabgabe "1" -- "1" AbstimmOption
+```
+
+## Bounded Contexts
+
+```mermaid
+flowchart LR
+    subgraph kontoverwaltung ["Kontoverwaltung"]
+        direction TB
+        K1["Bürgerin"]
+        K2["VerwaltungsAngestellte"]
+        K3["Bürger registriert<br/>Zwei-Faktor aktiviert<br/>Authentifiziert"]:::event
+    end
+
+    subgraph abstimmungsverwaltung ["Abstimmungsverwaltung"]
+        direction TB
+        V1["Abstimmung<br/>AbstimmOption<br/>Abstimmungszeitraum"]
+        V2["Abstimmung erstellt"]:::event
+    end
+
+    subgraph stimmabgabe ["Stimmabgabe"]
+        direction TB
+        S1["Stimmabgabe"]
+        S2["Stimme abgegeben"]:::event
+    end
+
+    subgraph abstimmungsansicht ["Abstimmungsansicht"]
+        direction TB
+        R1["Abstimmungsergebnis"]
+        R2["Ergebnis angezeigt"]:::event
+    end
+
+    kontoverwaltung -- "Rolle (IstVa)" --> abstimmungsverwaltung
+    kontoverwaltung -- "Rolle (IstBuerger)" --> stimmabgabe
+    abstimmungsverwaltung -- "AbstimmungId, Zeitraum, Optionen" --> stimmabgabe
+    stimmabgabe -- "Stimmen nach Fristablauf" --> abstimmungsansicht
+
+    classDef box fill:#fff,stroke:#000,color:#000
+    classDef event fill:#ffb74d,stroke:#ef6c00,color:#000
+    class kontoverwaltung,abstimmungsverwaltung,stimmabgabe,abstimmungsansicht box
 ```
 
 ## Domain Services und Repositories
