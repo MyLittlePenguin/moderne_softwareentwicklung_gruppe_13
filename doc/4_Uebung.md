@@ -55,6 +55,13 @@
    eingebaut werden muss.
 4. **Zwei-Faktor ganz am Ende:** fachlich am wenigsten wert, technisch am aufwändigsten.
 
+### Bewertung
+
+- **Keine eventbasierte Architektur.** Die Domain-Events aus dem Event Storming beschreiben die
+  Fachlichkeit und legen die Reihenfolge der Anwendungsfälle fest. Eine technische Event-Infrastruktur
+  folgt daraus nicht, das LLM hatte dies gefolgert. Die Contexts kennen einander nur über IDs und
+  definierte Schnittstellen. Punkt 4 der Strategie in [3_Uebung.md](3_Uebung.md) ist entsprechend angepasst.
+
 <!-- Domain-Events (mind. 2), angepasste Entwicklungsstrategie, übernommene/abgelehnte LLM-Vorschläge (ca. 5–6 Sätze) -->
 
 ## 2. Testfälle mit LLM generieren und validieren (TDD Schritt 1)
