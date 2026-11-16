@@ -1,0 +1,10 @@
+server:
+  port: 8080
+  host: 0.0.0.0
+
+db:
+  source: jdbc
+  connection:
+    url: jdbc:h2:file:./data/votee;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=FALSE
+    username: sa
+    password:
