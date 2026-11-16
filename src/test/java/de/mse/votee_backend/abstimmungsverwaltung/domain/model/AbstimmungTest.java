@@ -3,7 +3,6 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,20 +17,26 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Tests für das Erstellen einer Abstimmung (Aggregate Root, Event "Abstimmung erstellt").
+ * Tests für das Erstellen einer Abstimmung (Aggregate Root, Event "Abstimmung
+ * erstellt").
  *
- * Grundlage: LLM-Vorschlag (Claude Opus 5.5, 16.11.2026), kritisch geprüft und angepasst,
+ * Grundlage: LLM-Vorschlag (Claude Opus 5.5, 16.11.2026), kritisch geprüft und
+ * angepasst,
  * siehe doc/4_Uebung.md, Abschnitt 2.
  *
- * Wichtig für TDD: Value Objects, die bei ungültigen Werten evtl. schon im eigenen
- * Konstruktor eine Exception werfen, werden IMMER innerhalb des assertThrows-Lambdas
- * gebaut. So bleibt offen, ob die Prüfung im Record oder in der Factory steckt –
+ * Wichtig für TDD: Value Objects, die bei ungültigen Werten evtl. schon im
+ * eigenen
+ * Konstruktor eine Exception werfen, werden IMMER innerhalb des
+ * assertThrows-Lambdas
+ * gebaut. So bleibt offen, ob die Prüfung im Record oder in der Factory steckt
+ * –
  * beide Implementierungen machen den Test grün.
  */
 @DisplayName("Abstimmung.erstelle(...)")
 class AbstimmungTest {
 
-    // Feste Testdaten – keine LocalDateTime.now(), damit die Tests reproduzierbar sind
+    // Feste Testdaten – keine LocalDateTime.now(), damit die Tests reproduzierbar
+    // sind
     private static final NutzerId VERWALTUNGSANGESTELLTE = new NutzerId("va-4711");
     private static final String TITEL = "Neubau Hallenbad";
     private static final String BESCHREIBUNG = "Soll die Stadt ein neues Hallenbad bauen?";
@@ -94,7 +99,6 @@ class AbstimmungTest {
             assertEquals(ENDE, abstimmung.getFrist());
         }
 
-
         @Test
         @DisplayName("behält die Reihenfolge der Optionen bei")
         void behaeltReihenfolgeDerOptionen() {
@@ -118,7 +122,6 @@ class AbstimmungTest {
 
             assertEquals("", abstimmung.getBeschreibung());
         }
-
 
         @Test
         @DisplayName("viele Optionen sind erlaubt (keine Obergrenze definiert)")
@@ -161,12 +164,11 @@ class AbstimmungTest {
                     () -> Abstimmung.erstelle(null, TITEL, BESCHREIBUNG, gueltigerZeitraum(), jaNein()));
         }
 
-
         // --- Regel 2: Titel ist nicht leer --------------------------------
 
         @ParameterizedTest(name = "Titel = \"{0}\"")
         @NullAndEmptySource
-        @ValueSource(strings = {"   ", "\t", "\n"})
+        @ValueSource(strings = { "   ", "\t", "\n" })
         @DisplayName("Regel 2: Titel ist leer oder besteht nur aus Leerraum")
         void titelIstLeer(String titel) {
             assertThrows(IllegalArgumentException.class, () -> erstelleMitTitel(titel));
@@ -186,8 +188,6 @@ class AbstimmungTest {
             assertThrows(IllegalArgumentException.class,
                     () -> erstelleMitZeitraum(new Abstimmungszeitraum(ENDE, BEGINN)));
         }
-
-
 
         // --- Regel 5: Optionen --------------------------------------------
 
@@ -218,7 +218,7 @@ class AbstimmungTest {
 
         @ParameterizedTest(name = "Optionstext = \"{0}\"")
         @NullAndEmptySource
-        @ValueSource(strings = {"   "})
+        @ValueSource(strings = { "   " })
         @DisplayName("Regel 5: Text einer Option ist leer")
         void optionstextIstLeer(String text) {
             assertThrows(IllegalArgumentException.class,
@@ -240,7 +240,7 @@ class AbstimmungTest {
     class Annahmen {
 
         @ParameterizedTest(name = "Beschreibung = \"{0}\" gilt als 'keine Beschreibung'")
-        @ValueSource(strings = {"", "   "})
+        @ValueSource(strings = { "", "   " })
         @DisplayName("Leere Beschreibung wird wie fehlende Beschreibung behandelt (leerer Text)")
         void leereBeschreibungGiltAlsFehlend(String beschreibung) {
             Abstimmung abstimmung = erstelleMitBeschreibung(beschreibung);
@@ -269,7 +269,7 @@ class AbstimmungTest {
         }
 
         @ParameterizedTest(name = "\"Ja\" und \"{0}\" gelten als doppelt")
-        @ValueSource(strings = {"ja", " Ja", "Ja ", "JA"})
+        @ValueSource(strings = { "ja", " Ja", "Ja ", "JA" })
         @DisplayName("Duplikate werden ohne Groß-/Kleinschreibung und Rand-Leerzeichen erkannt")
         void duplikateWerdenNormalisiertErkannt(String variante) {
             assertThrows(IllegalArgumentException.class,
