@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -295,6 +296,15 @@ class AbstimmungTest {
             assertThrows(IllegalArgumentException.class,
                     () -> erstelleMitOptionen(List.of(new AbstimmOption("Ja"), new AbstimmOption(variante))));
         }
+
+        @Test
+        @DisplayName("E1: Duplikate werden auch in zerlegter Unicode-Form (NFD) erkannt")
+        void duplikateInNfdFormWerdenErkannt() {
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> erstelleMitOptionen(List.of(new AbstimmOption("Grün"), new AbstimmOption(nfd))));
+        }
     }
 
     // =====================================================================
@@ -424,6 +434,15 @@ class AbstimmungTest {
                     () -> assertFalse(abstimmung.hatOption((AbstimmOption) null)),
                     () -> assertFalse(abstimmung.hatOption((String) null)),
                     () -> assertFalse(abstimmung.hatOption("   ")));
+        }
+
+        @Test
+        @DisplayName("E1: hatOption findet eine Option auch in zerlegter Unicode-Form (NFD)")
+        void hatOptionErkenntNfdForm() {
+            Abstimmung abstimmung = erstelleMitOptionen(optionen("Grün", "Rot"));
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertTrue(abstimmung.hatOption(nfd));
         }
     }
 }

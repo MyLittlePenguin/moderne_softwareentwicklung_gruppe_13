@@ -3,7 +3,6 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -88,8 +87,7 @@ public final class Abstimmung {
             if (option.text() == null || option.text().isBlank()) {
                 throw new IllegalArgumentException("Optionstext darf nicht leer sein.");
             }
-            String normalisierterText = option.text().strip().toLowerCase(Locale.ROOT);
-            if (!normalisierteTexte.add(normalisierterText)) {
+            if (!normalisierteTexte.add(option.normalisierterText())) {
                 throw new IllegalArgumentException("Doppelte Option gefunden: " + option.text());
             }
         }
@@ -231,9 +229,9 @@ public final class Abstimmung {
         if (text == null || text.isBlank()) {
             return false;
         }
-        String normalisiert = text.strip().toLowerCase(Locale.ROOT);
+        String normalisiert = new AbstimmOption(text).normalisierterText();
         for (AbstimmOption option : optionen) {
-            if (option.text().strip().toLowerCase(Locale.ROOT).equals(normalisiert)) {
+            if (option.normalisierterText().equals(normalisiert)) {
                 return true;
             }
         }
