@@ -71,7 +71,20 @@ public final class Abstimmung {
             throw new IllegalArgumentException("Abstimmungszeitraum muss angegeben werden.");
         }
 
-        // Regel 5: Optionen prüfen
+        // Regel 5: mindestens zwei Optionen, keine Duplikate
+        List<AbstimmOption> gepruefteOptionen = pruefeOptionen(optionen);
+
+        return new Abstimmung(id, erstelltVon, titel, bereinigteBeschreibung, zeitraum, gepruefteOptionen);
+    }
+
+    /**
+     * Prüft Regel 5 und liefert eine unveränderliche Kopie der Optionsliste.
+     * Leere Optionstexte sind schon durch das Value Object {@link AbstimmOption} ausgeschlossen.
+     *
+     * @param optionen die übergebenen Optionen
+     * @return unveränderliche Kopie der Optionen
+     */
+    private static List<AbstimmOption> pruefeOptionen(List<AbstimmOption> optionen) {
         if (optionen == null) {
             throw new IllegalArgumentException("Optionsliste darf nicht null sein.");
         }
@@ -79,27 +92,17 @@ public final class Abstimmung {
             throw new IllegalArgumentException("Eine Abstimmung muss mindestens zwei Optionen haben.");
         }
 
+        // Bewusst Schleife statt Stream: bricht beim ersten Duplikat ab und nennt es in der Meldung
         Set<String> normalisierteTexte = new HashSet<>();
         for (AbstimmOption option : optionen) {
             if (option == null) {
                 throw new IllegalArgumentException("Option darf nicht null sein.");
             }
-            if (option.text() == null || option.text().isBlank()) {
-                throw new IllegalArgumentException("Optionstext darf nicht leer sein.");
-            }
             if (!normalisierteTexte.add(option.normalisierterText())) {
                 throw new IllegalArgumentException("Doppelte Option gefunden: " + option.text());
             }
         }
-
-        return new Abstimmung(
-                id,
-                erstelltVon,
-                titel,
-                bereinigteBeschreibung,
-                zeitraum,
-                List.copyOf(optionen)
-        );
+        return List.copyOf(optionen);
     }
 
     /**
@@ -213,10 +216,13 @@ public final class Abstimmung {
      * @return true, falls die Option existiert, sonst false
      */
     public boolean hatOption(AbstimmOption option) {
-        if (option == null || option.text() == null || option.text().isBlank()) {
+        if (option == null) {
             return false;
         }
-        return hatOption(option.text());
+        String gesucht = option.normalisierterText();
+        return optionen.stream()
+                .map(AbstimmOption::normalisierterText)
+                .anyMatch(gesucht::equals);
     }
 
     /**
@@ -229,13 +235,7 @@ public final class Abstimmung {
         if (text == null || text.isBlank()) {
             return false;
         }
-        String normalisiert = new AbstimmOption(text).normalisierterText();
-        for (AbstimmOption option : optionen) {
-            if (option.normalisierterText().equals(normalisiert)) {
-                return true;
-            }
-        }
-        return false;
+        return hatOption(new AbstimmOption(text));
     }
 
     @Override
