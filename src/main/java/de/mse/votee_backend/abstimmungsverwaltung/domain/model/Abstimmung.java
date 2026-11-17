@@ -11,17 +11,20 @@ import java.util.Set;
  */
 public final class Abstimmung {
 
+    private final AbstimmungId id;
     private final NutzerId erstelltVon;
     private final String titel;
     private final String beschreibung;
     private final Abstimmungszeitraum zeitraum;
     private final List<AbstimmOption> optionen;
 
-    private Abstimmung(NutzerId erstelltVon,
+    private Abstimmung(AbstimmungId id,
+                       NutzerId erstelltVon,
                        String titel,
                        String beschreibung,
                        Abstimmungszeitraum zeitraum,
                        List<AbstimmOption> optionen) {
+        this.id = id;
         this.erstelltVon = erstelltVon;
         this.titel = titel;
         this.beschreibung = beschreibung;
@@ -32,6 +35,7 @@ public final class Abstimmung {
     /**
      * Erstellt eine neue Abstimmung nach Prüfung aller Fachregeln (Invarianten).
      *
+     * @param id           die eindeutige ID der Abstimmung
      * @param erstelltVon  die NutzerId der Erstellerin / des Erstellers
      * @param titel        der Titel der Abstimmung
      * @param beschreibung die Beschreibung (optional)
@@ -39,11 +43,17 @@ public final class Abstimmung {
      * @param optionen     die Liste der Antwortoptionen (mindestens zwei)
      * @return die erstellte Abstimmung
      */
-    public static Abstimmung erstelle(NutzerId erstelltVon,
+    public static Abstimmung erstelle(AbstimmungId id,
+                                      NutzerId erstelltVon,
                                       String titel,
                                       String beschreibung,
                                       Abstimmungszeitraum zeitraum,
                                       List<AbstimmOption> optionen) {
+        // Regel 0: Id ist gesetzt
+        if (id == null) {
+            throw new IllegalArgumentException("AbstimmungId muss angegeben werden.");
+        }
+
         // Regel 1: Ersteller ist gesetzt
         if (erstelltVon == null) {
             throw new IllegalArgumentException("Ersteller (NutzerId) muss angegeben werden.");
@@ -85,12 +95,17 @@ public final class Abstimmung {
         }
 
         return new Abstimmung(
+                id,
                 erstelltVon,
                 titel,
                 bereinigteBeschreibung,
                 zeitraum,
                 List.copyOf(optionen)
         );
+    }
+
+    public AbstimmungId getId() {
+        return id;
     }
 
     public NutzerId getErstelltVon() {
@@ -115,5 +130,22 @@ public final class Abstimmung {
 
     public LocalDateTime getFrist() {
         return zeitraum.ende();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Abstimmung that = (Abstimmung) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }
