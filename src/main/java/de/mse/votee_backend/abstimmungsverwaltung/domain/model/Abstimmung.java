@@ -132,6 +132,90 @@ public final class Abstimmung {
         return zeitraum.ende();
     }
 
+    /**
+     * Prüft, ob die Abstimmung zum gegebenen Zeitpunkt aktiv läuft (im Abstimmungszeitraum liegt).
+     *
+     * @param zeitpunkt der zu prüfende Zeitpunkt
+     * @return true, falls die Abstimmung läuft, sonst false
+     */
+    public boolean istLaufend(LocalDateTime zeitpunkt) {
+        return zeitraum.enthaelt(zeitpunkt);
+    }
+
+    /**
+     * Prüft, ob die Abstimmung zum gegebenen Zeitpunkt beendet ist (Frist abgelaufen).
+     *
+     * @param zeitpunkt der zu prüfende Zeitpunkt
+     * @return true, falls die Frist abgelaufen ist, sonst false
+     */
+    public boolean istBeendet(LocalDateTime zeitpunkt) {
+        return zeitraum.istVorbei(zeitpunkt);
+    }
+
+    /**
+     * Prüft, ob die Abstimmung zum gegebenen Zeitpunkt noch nicht gestartet ist (in der Zukunft liegt).
+     *
+     * @param zeitpunkt der zu prüfende Zeitpunkt
+     * @return true, falls der Beginn in der Zukunft liegt, sonst false
+     */
+    public boolean istNochNichtGestartet(LocalDateTime zeitpunkt) {
+        return zeitraum.istInZukunft(zeitpunkt);
+    }
+
+    /**
+     * Prüft, ob zum gegebenen Zeitpunkt eine Stimme abgegeben werden kann.
+     * Fachlich gleichbedeutend mit {@link #istLaufend(LocalDateTime)}.
+     *
+     * @param zeitpunkt der zu prüfende Zeitpunkt
+     * @return true, falls Stimmabgabe möglich ist, sonst false
+     */
+    public boolean kannAbgestimmtWerden(LocalDateTime zeitpunkt) {
+        return istLaufend(zeitpunkt);
+    }
+
+    /**
+     * Prüft, ob das Abstimmungsergebnis zum gegebenen Zeitpunkt eingesehen werden darf.
+     * Fachlich erst nach Fristablauf ({@link #istBeendet(LocalDateTime)}) zulässig.
+     *
+     * @param zeitpunkt der zu prüfende Zeitpunkt
+     * @return true, falls das Ergebnis einsehbar ist, sonst false
+     */
+    public boolean kannErgebnisEingesehenWerden(LocalDateTime zeitpunkt) {
+        return istBeendet(zeitpunkt);
+    }
+
+    /**
+     * Prüft, ob eine bestimmte AbstimmOption zur Abstimmung gehört (normalisierter Textvergleich).
+     *
+     * @param option die zu suchende Option
+     * @return true, falls die Option existiert, sonst false
+     */
+    public boolean hatOption(AbstimmOption option) {
+        if (option == null || option.text() == null || option.text().isBlank()) {
+            return false;
+        }
+        return hatOption(option.text());
+    }
+
+    /**
+     * Prüft, ob eine AbstimmOption mit dem gegebenen Text zur Abstimmung gehört (normalisierter Vergleich).
+     *
+     * @param text der Text der gesuchten Option
+     * @return true, falls eine entsprechende Option existiert, sonst false
+     */
+    public boolean hatOption(String text) {
+        if (text == null || text.isBlank()) {
+            return false;
+        }
+        String normalisiert = text.strip().toLowerCase(Locale.ROOT);
+        for (AbstimmOption option : optionen) {
+            if (option.text().strip().toLowerCase(Locale.ROOT).equals(normalisiert)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -2,8 +2,10 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -336,6 +338,92 @@ class AbstimmungTest {
             assertAll(
                     () -> assertNotEquals(null, a),
                     () -> assertNotEquals("keine Abstimmung", a));
+        }
+    }
+
+    // =====================================================================
+    @Nested
+    @DisplayName("Fachliches Verhalten (Domain Behavior)")
+    class FachlichesVerhalten {
+
+        @Test
+        @DisplayName("istLaufend prüft, ob die Abstimmung im Zeitraum aktiv ist")
+        void istLaufendPrueftAktivitaet() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.istLaufend(BEGINN.minusMinutes(1))),
+                    () -> assertTrue(abstimmung.istLaufend(BEGINN)),
+                    () -> assertTrue(abstimmung.istLaufend(BEGINN.plusDays(1))),
+                    () -> assertTrue(abstimmung.istLaufend(ENDE)),
+                    () -> assertFalse(abstimmung.istLaufend(ENDE.plusMinutes(1))),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istLaufend(null)));
+        }
+
+        @Test
+        @DisplayName("istBeendet prüft, ob die Frist abgelaufen ist")
+        void istBeendetPrueftFristablauf() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.istBeendet(BEGINN.minusDays(1))),
+                    () -> assertFalse(abstimmung.istBeendet(BEGINN)),
+                    () -> assertFalse(abstimmung.istBeendet(ENDE)),
+                    () -> assertTrue(abstimmung.istBeendet(ENDE.plusMinutes(1))),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istBeendet(null)));
+        }
+
+        @Test
+        @DisplayName("istNochNichtGestartet prüft, ob die Abstimmung in der Zukunft liegt")
+        void istNochNichtGestartetPrueftBeginn() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertTrue(abstimmung.istNochNichtGestartet(BEGINN.minusMinutes(1))),
+                    () -> assertFalse(abstimmung.istNochNichtGestartet(BEGINN)),
+                    () -> assertFalse(abstimmung.istNochNichtGestartet(ENDE)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istNochNichtGestartet(null)));
+        }
+
+        @Test
+        @DisplayName("kannAbgestimmtWerden ist nur während der Laufzeit true")
+        void kannAbgestimmtWerdenSemantik() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.kannAbgestimmtWerden(BEGINN.minusMinutes(1))),
+                    () -> assertTrue(abstimmung.kannAbgestimmtWerden(BEGINN)),
+                    () -> assertTrue(abstimmung.kannAbgestimmtWerden(ENDE)),
+                    () -> assertFalse(abstimmung.kannAbgestimmtWerden(ENDE.plusMinutes(1))));
+        }
+
+        @Test
+        @DisplayName("kannErgebnisEingesehenWerden ist erst nach Fristablauf true")
+        void kannErgebnisEingesehenWerdenSemantik() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.kannErgebnisEingesehenWerden(BEGINN)),
+                    () -> assertFalse(abstimmung.kannErgebnisEingesehenWerden(ENDE)),
+                    () -> assertTrue(abstimmung.kannErgebnisEingesehenWerden(ENDE.plusMinutes(1))));
+        }
+
+        @Test
+        @DisplayName("hatOption prüft Existenz einer Option anhand von Objekt oder Text normalisiert")
+        void hatOptionPrueftOptionen() {
+            Abstimmung abstimmung = erstelleMitOptionen(optionen("Ja", "Nein"));
+
+            assertAll(
+                    () -> assertTrue(abstimmung.hatOption(new AbstimmOption("Ja"))),
+                    () -> assertTrue(abstimmung.hatOption(new AbstimmOption(" ja "))),
+                    () -> assertTrue(abstimmung.hatOption("Ja")),
+                    () -> assertTrue(abstimmung.hatOption(" ja ")),
+                    () -> assertTrue(abstimmung.hatOption("JA")),
+                    () -> assertFalse(abstimmung.hatOption(new AbstimmOption("Vielleicht"))),
+                    () -> assertFalse(abstimmung.hatOption("Vielleicht")),
+                    () -> assertFalse(abstimmung.hatOption((AbstimmOption) null)),
+                    () -> assertFalse(abstimmung.hatOption((String) null)),
+                    () -> assertFalse(abstimmung.hatOption("   ")));
         }
     }
 }
