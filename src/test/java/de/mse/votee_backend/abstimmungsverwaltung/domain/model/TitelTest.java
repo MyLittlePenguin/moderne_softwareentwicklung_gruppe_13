@@ -13,9 +13,9 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Tests für das Value Object Titel (bzw. Title).
+ * Tests für das Value Object Titel.
  */
-@DisplayName("Titel / Title (Value Object)")
+@DisplayName("Titel (Value Object)")
 class TitelTest {
 
     @ParameterizedTest(name = "gültig: \"{0}\"")
@@ -82,13 +82,5 @@ class TitelTest {
     @DisplayName("Negativ: mehr als 100 Zeichen wirft IllegalArgumentException")
     void mehrAlsHundertZeichenWirftException() {
         assertThrows(IllegalArgumentException.class, () -> new Titel("a".repeat(101)));
-    }
-
-    @Test
-    @DisplayName("Title-Record: englischsprachiger Alias verhält sich identisch")
-    void titleRecordFunktioniertIdentisch() {
-        Title title = new Title("  Neubau Hallenbad  ");
-        assertEquals("Neubau Hallenbad", title.wert());
-        assertThrows(IllegalArgumentException.class, () -> new Title("Ab"));
     }
 }
