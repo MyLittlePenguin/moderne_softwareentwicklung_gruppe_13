@@ -3,7 +3,6 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -51,57 +50,59 @@ public final class Abstimmung {
                                       List<AbstimmOption> optionen) {
         // Regel 0: Id ist gesetzt
         if (id == null) {
-            throw new IllegalArgumentException("AbstimmungId muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("AbstimmungId muss angegeben werden.");
         }
 
         // Regel 1: Ersteller ist gesetzt
         if (erstelltVon == null) {
-            throw new IllegalArgumentException("Ersteller (NutzerId) muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("Ersteller (NutzerId) muss angegeben werden.");
         }
 
         // Regel 2: Titel ist nicht leer
         if (titel == null) {
-            throw new IllegalArgumentException("Titel darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("Titel darf nicht leer sein.");
         }
 
-        // Regel 3: Beschreibung ist optional (null oder blank wird zu leerem String)
-        String bereinigteBeschreibung = (beschreibung == null || beschreibung.isBlank()) ? "" : beschreibung;
+        // Regel 3: Beschreibung ist optional (null oder blank wird zu leerem String), Rand-Leerzeichen entfallen
+        String bereinigteBeschreibung = beschreibung == null ? "" : beschreibung.strip();
 
         // Regel 4: Zeitraum ist gesetzt
         if (zeitraum == null) {
-            throw new IllegalArgumentException("Abstimmungszeitraum muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("Abstimmungszeitraum muss angegeben werden.");
         }
 
-        // Regel 5: Optionen prüfen
+        // Regel 5: mindestens zwei Optionen, keine Duplikate
+        List<AbstimmOption> gepruefteOptionen = pruefeOptionen(optionen);
+
+        return new Abstimmung(id, erstelltVon, titel, bereinigteBeschreibung, zeitraum, gepruefteOptionen);
+    }
+
+    /**
+     * Prüft Regel 5 und liefert eine unveränderliche Kopie der Optionsliste.
+     * Leere Optionstexte sind schon durch das Value Object {@link AbstimmOption} ausgeschlossen.
+     *
+     * @param optionen die übergebenen Optionen
+     * @return unveränderliche Kopie der Optionen
+     */
+    private static List<AbstimmOption> pruefeOptionen(List<AbstimmOption> optionen) {
         if (optionen == null) {
-            throw new IllegalArgumentException("Optionsliste darf nicht null sein.");
+            throw new AbstimmungsregelVerletztException("Optionsliste darf nicht null sein.");
         }
         if (optionen.size() < 2) {
-            throw new IllegalArgumentException("Eine Abstimmung muss mindestens zwei Optionen haben.");
+            throw new AbstimmungsregelVerletztException("Eine Abstimmung muss mindestens zwei Optionen haben.");
         }
 
+        // Bewusst Schleife statt Stream: bricht beim ersten Duplikat ab und nennt es in der Meldung
         Set<String> normalisierteTexte = new HashSet<>();
         for (AbstimmOption option : optionen) {
             if (option == null) {
-                throw new IllegalArgumentException("Option darf nicht null sein.");
+                throw new AbstimmungsregelVerletztException("Option darf nicht null sein.");
             }
-            if (option.text() == null || option.text().isBlank()) {
-                throw new IllegalArgumentException("Optionstext darf nicht leer sein.");
-            }
-            String normalisierterText = option.text().strip().toLowerCase(Locale.ROOT);
-            if (!normalisierteTexte.add(normalisierterText)) {
-                throw new IllegalArgumentException("Doppelte Option gefunden: " + option.text());
+            if (!normalisierteTexte.add(option.normalisierterText())) {
+                throw new AbstimmungsregelVerletztException("Doppelte Option gefunden: " + option.text());
             }
         }
-
-        return new Abstimmung(
-                id,
-                erstelltVon,
-                titel,
-                bereinigteBeschreibung,
-                zeitraum,
-                List.copyOf(optionen)
-        );
+        return List.copyOf(optionen);
     }
 
     /**
@@ -215,10 +216,13 @@ public final class Abstimmung {
      * @return true, falls die Option existiert, sonst false
      */
     public boolean hatOption(AbstimmOption option) {
-        if (option == null || option.text() == null || option.text().isBlank()) {
+        if (option == null) {
             return false;
         }
-        return hatOption(option.text());
+        String gesucht = option.normalisierterText();
+        return optionen.stream()
+                .map(AbstimmOption::normalisierterText)
+                .anyMatch(gesucht::equals);
     }
 
     /**
@@ -231,25 +235,13 @@ public final class Abstimmung {
         if (text == null || text.isBlank()) {
             return false;
         }
-        String normalisiert = text.strip().toLowerCase(Locale.ROOT);
-        for (AbstimmOption option : optionen) {
-            if (option.text().strip().toLowerCase(Locale.ROOT).equals(normalisiert)) {
-                return true;
-            }
-        }
-        return false;
+        return hatOption(new AbstimmOption(text));
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Abstimmung that = (Abstimmung) o;
-        return id.equals(that.id);
+        // Entität: Gleichheit nur über die Identität (Pattern Matching für instanceof, Java 16+)
+        return o instanceof Abstimmung andere && id.equals(andere.id);
     }
 
     @Override

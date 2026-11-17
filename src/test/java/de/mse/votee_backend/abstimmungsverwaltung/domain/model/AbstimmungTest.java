@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -269,6 +270,14 @@ class AbstimmungTest {
         }
 
         @Test
+        @DisplayName("E3: Rand-Leerzeichen der Beschreibung werden entfernt (wie beim Titel)")
+        void beschreibungWirdGetrimmt() {
+            Abstimmung abstimmung = erstelleMitBeschreibung("  Soll gebaut werden?  ");
+
+            assertEquals("Soll gebaut werden?", abstimmung.getBeschreibung());
+        }
+
+        @Test
         @DisplayName("Aggregat kopiert die Optionsliste (spätere Änderung von außen wirkt nicht)")
         void optionenWerdenDefensivKopiert() {
             List<AbstimmOption> veraenderbar = new ArrayList<>(jaNein());
@@ -294,6 +303,15 @@ class AbstimmungTest {
         void duplikateWerdenNormalisiertErkannt(String variante) {
             assertThrows(IllegalArgumentException.class,
                     () -> erstelleMitOptionen(List.of(new AbstimmOption("Ja"), new AbstimmOption(variante))));
+        }
+
+        @Test
+        @DisplayName("E1: Duplikate werden auch in zerlegter Unicode-Form (NFD) erkannt")
+        void duplikateInNfdFormWerdenErkannt() {
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> erstelleMitOptionen(List.of(new AbstimmOption("Grün"), new AbstimmOption(nfd))));
         }
     }
 
@@ -424,6 +442,15 @@ class AbstimmungTest {
                     () -> assertFalse(abstimmung.hatOption((AbstimmOption) null)),
                     () -> assertFalse(abstimmung.hatOption((String) null)),
                     () -> assertFalse(abstimmung.hatOption("   ")));
+        }
+
+        @Test
+        @DisplayName("E1: hatOption findet eine Option auch in zerlegter Unicode-Form (NFD)")
+        void hatOptionErkenntNfdForm() {
+            Abstimmung abstimmung = erstelleMitOptionen(optionen("Grün", "Rot"));
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertTrue(abstimmung.hatOption(nfd));
         }
     }
 }

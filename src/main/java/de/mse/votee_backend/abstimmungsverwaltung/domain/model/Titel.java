@@ -13,11 +13,11 @@ public record Titel(String wert) {
     private static final int MAX_LAENGE = 100;
 
     private static final Pattern TITEL_PATTERN =
-            Pattern.compile("^(?=.*[\\p{L}0-9])[\\p{L}0-9 ,.?!:()'\"/%€-]{3,100}$");
+            Pattern.compile("^(?=.*[\\p{L}0-9])[\\p{L}0-9 ,.?!:()'\"/%€-]+$");
 
     public Titel {
         if (wert == null || wert.isBlank()) {
-            throw new IllegalArgumentException("Titel darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("Titel darf nicht leer sein.");
         }
 
         // Unicode normalisieren (NFD zu NFC, z. B. macOS zerlegte Umlaute)
@@ -26,14 +26,15 @@ public record Titel(String wert) {
         // Rand-Leerzeichen entfernen (Steuerzeichen wie \t, \n bleiben erhalten und scheitern am Pattern)
         String bereinigt = stripSpaces(normalisiert);
 
+        // Länge nur hier prüfen (einzige Quelle für 3–100), das Pattern prüft nur noch die Zeichen
+        if (bereinigt.length() < MIN_LAENGE) {
+            throw new AbstimmungsregelVerletztException("Titel muss mindestens " + MIN_LAENGE + " Zeichen lang sein.");
+        }
+        if (bereinigt.length() > MAX_LAENGE) {
+            throw new AbstimmungsregelVerletztException("Titel darf höchstens " + MAX_LAENGE + " Zeichen lang sein.");
+        }
         if (!TITEL_PATTERN.matcher(bereinigt).matches()) {
-            if (bereinigt.length() < MIN_LAENGE) {
-                throw new IllegalArgumentException("Titel muss mindestens " + MIN_LAENGE + " Zeichen lang sein.");
-            }
-            if (bereinigt.length() > MAX_LAENGE) {
-                throw new IllegalArgumentException("Titel darf höchstens " + MAX_LAENGE + " Zeichen lang sein.");
-            }
-            throw new IllegalArgumentException("Titel enthält ungültige Zeichen.");
+            throw new AbstimmungsregelVerletztException("Titel enthält ungültige Zeichen.");
         }
 
         wert = bereinigt;

@@ -7,7 +7,7 @@ public record NutzerId(String wert) {
 
     public NutzerId {
         if (wert == null || wert.isBlank()) {
-            throw new IllegalArgumentException("NutzerId darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("NutzerId darf nicht leer sein.");
         }
     }
 }

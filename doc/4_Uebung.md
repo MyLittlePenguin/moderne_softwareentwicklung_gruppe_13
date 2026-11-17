@@ -174,6 +174,27 @@ bewusst entfernt), das `AbstimmungRepository` und fachliche Exceptions statt `Il
 
 <!-- Umgesetzte und abgelehnte Refactoring-Vorschläge (ca. 5–6 Sätze) -->
 
+Bearbeitung: Hassan
+
+**LLM-Einsatz:** Claude (Opus 5.5), 17.11.2026, Branch `abgabe_04_refactoring`. Prompt, Antwort und unsere
+Bewertung jedes Vorschlags stehen in [4_4_LLM_Prompt_und_Antwort.md](4_4_LLM_Prompt_und_Antwort.md); jeder
+Arbeitsschritt ist ein eigener Commit (Test und Code eines Schritts gemeinsam, die rote Phase wurde vor dem
+Commit lokal geprüft).
+
+Das LLM fand mit Optionen in zerlegter Unicode-Form (z. B. „Grün“ von macOS) einen echten Fehler: Sie wurden
+nicht als Duplikat erkannt; wir haben das zuerst mit einem roten Test belegt und dann die Vergleichsregel in
+`AbstimmOption.normalisierterText()` gebündelt, statt sie doppelt in `Abstimmung` zu pflegen. Außerdem haben
+wir den überflüssigen Alias `Title` gelöscht, die Optionsprüfung aus der langen Factory-Methode extrahiert,
+unerreichbare Prüfungen entfernt, `hatOption` auf `stream().anyMatch()` und `equals` auf Pattern Matching
+umgestellt, die Titellänge nur noch an einer Stelle geprüft und eine fachliche
+`AbstimmungsregelVerletztException` eingeführt, die von `IllegalArgumentException` erbt, sodass alle Tests
+aus 4.2 unverändert grün bleiben. Nicht sinnvoll waren ein Stream für die Duplikatprüfung (die Schleife bricht
+früher ab und nennt das Duplikat), `Optional` für die Beschreibung (widerspricht der in 4.2 festgelegten Regel
+„leer = keine Beschreibung“) und ein Cache für `hatOption`, weil Abstimmungen nur wenige Optionen haben und
+das vorzeitige Optimierung wäre. Zwei vom LLM als fehlend gemeldete Edge-Cases (Zeitpunkt genau am
+Fristende, `null` als Zeitpunkt) waren bereits getestet; das LLM hatte vorhandene Tests übersehen, weshalb
+wir jede Behauptung gegen den Code geprüft haben. Nach allen Schritten laufen 190 Tests grün (vorher 173).
+
 ## 5. Modularität und Testbarkeit via CI/CD
 
 <!-- Modularität, Bounded Contexts, CI-Pipeline inkl. Tests (ca. 8–10 Sätze) -->
