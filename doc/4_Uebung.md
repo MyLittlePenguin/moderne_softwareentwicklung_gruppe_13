@@ -61,6 +61,10 @@
   Fachlichkeit und legen die Reihenfolge der Anwendungsfälle fest. Eine technische Event-Infrastruktur
   folgt daraus nicht, das LLM hatte dies gefolgert. Die Contexts kennen einander nur über IDs und
   definierte Schnittstellen. Punkt 4 der Strategie in [3_Uebung.md](3_Uebung.md) ist entsprechend angepasst.
+- **Paketstruktur nur exemplarisch.** Unsere Paketstruktur zu Übung 3 war nur exemplarisch und sollte
+  keine feste Vorgabe darstellen. Das LLM hat hier einen Punkt aufgebracht, der nicht relevant war.
+- **In-Memory-Repository** wird in Form einer H2-In-Memory-DB dargestellt und es werden nicht extra
+  In-Memory-Datenstrukturen erstellt. Das würde die Testimplementierung verkomplizieren.
 - **Teststrategie klargestellt (a2).** Den Widerspruch in Punkt 5 („nur die Domain-Logik … somit nur
   die Adapter“) hat das LLM zu Recht gefunden. Gemeint war die Trennung, die wir in Aufgabe 2 schon
   umsetzen: Domänentests laufen ohne Framework und ohne Datenbank. Integrationstests schreiben wir nur
