@@ -240,14 +240,8 @@ public final class Abstimmung {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Abstimmung that = (Abstimmung) o;
-        return id.equals(that.id);
+        // Entität: Gleichheit nur über die Identität (Pattern Matching für instanceof, Java 16+)
+        return o instanceof Abstimmung andere && id.equals(andere.id);
     }
 
     @Override
