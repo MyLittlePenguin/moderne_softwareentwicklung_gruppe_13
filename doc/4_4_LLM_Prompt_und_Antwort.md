@@ -55,19 +55,19 @@ Alle Fälle wurden mit dem kompilierten Code ausgeführt (Stand `8236217`).
 
 | Vorschlag | Entscheidung | Begründung | Commit |
 |---|---|---|---|
-| E1 + R2 | übernommen | Echter Fehler, mit Test belegt (rot → grün). Vergleichsregel jetzt nur in `AbstimmOption.normalisierterText()`. | `0d02e37` |
+| E1 + R2 | übernommen | Echter Fehler, mit Test belegt (rot → grün). Vergleichsregel jetzt nur in `AbstimmOption.normalisierterText()`. | `e7f7357` |
 | E2 (ß/SS) | abgelehnt | Seltener Fall. Volle Unicode-Faltung (`Collator`) wäre unverhältnismäßig. | – |
-| E3 | übernommen | Beschreibung wird jetzt wie der Titel getrimmt. | `9cdd43e` |
+| E3 | übernommen | Beschreibung wird jetzt wie der Titel getrimmt. | `ef90d66` |
 | E4, E5 | **LLM-Fehler** | Beide Fälle waren schon in `AbstimmungTest.FachlichesVerhalten` getestet (`istLaufend(ENDE)`, `istLaufend(null)`). Das LLM hat bestehende Tests übersehen. | – |
-| E6 | als Test festgehalten | Ablehnung des geschützten Leerzeichens ist gewollt, jetzt dokumentiert. | `443069b` |
+| E6 | als Test festgehalten | Ablehnung des geschützten Leerzeichens ist gewollt, jetzt dokumentiert. | `7c6ebe4` |
 | E7, E8 | vertagt | ID-Format und „Beginn in der Vergangenheit“ gehören zum Application Service (mit `Clock`). | – |
-| R1 | übernommen | `Title.java` und Test gelöscht. | `658946d` |
-| R3, R4, R5 | übernommen | `pruefeOptionen` extrahiert, unerreichbare Prüfungen entfernt, `hatOption` mit `stream().map().anyMatch()`. | `5516803` |
+| R1 | übernommen | `Title.java` und Test gelöscht. | `4525fb5` |
+| R3, R4, R5 | übernommen | `pruefeOptionen` extrahiert, unerreichbare Prüfungen entfernt, `hatOption` mit `stream().map().anyMatch()`. | `96c2f2b` |
 | R6 | abgelehnt | Schleife bleibt: früher Abbruch und Duplikat in der Fehlermeldung. | – |
-| R7 | übernommen | `AbstimmungsregelVerletztException extends IllegalArgumentException`. `null` als Zeitpunkt bleibt bewusst `IllegalArgumentException` (Programmierfehler, keine Fachregel). | `ac0a9e0` |
-| R8 | übernommen | Länge nur noch über `MIN_LAENGE`/`MAX_LAENGE`, Regex prüft nur Zeichen. | `5428c02` |
+| R7 | übernommen | `AbstimmungsregelVerletztException extends IllegalArgumentException`. `null` als Zeitpunkt bleibt bewusst `IllegalArgumentException` (Programmierfehler, keine Fachregel). | `6a9548d` |
+| R8 | übernommen | Länge nur noch über `MIN_LAENGE`/`MAX_LAENGE`, Regex prüft nur Zeichen. | `9ba5a70` |
 | R9, R10 | abgelehnt | Geringer Nutzen, funktionierender Code. | – |
-| R11 | übernommen | `o instanceof Abstimmung andere && id.equals(andere.id)`. | `39aaee8` |
+| R11 | übernommen | `o instanceof Abstimmung andere && id.equals(andere.id)`. | `9fbacff` |
 | R12, R13, R14 | abgelehnt | Siehe Bewertung oben (großer Testumbau, bewusste 4.2-Regel, vorzeitige Optimierung). | – |
 
 Ergebnis: 187 Domänen- und Validator-Tests grün (vorher 170), plus 3 Helidon-Tests (`MainTest`, `TemplatesTest`).
