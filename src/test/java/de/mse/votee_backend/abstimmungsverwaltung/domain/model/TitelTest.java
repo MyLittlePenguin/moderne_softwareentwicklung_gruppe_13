@@ -79,6 +79,12 @@ class TitelTest {
     }
 
     @Test
+    @DisplayName("E6: geschütztes Leerzeichen (z. B. aus Word kopiert) gilt bewusst als ungültiges Zeichen")
+    void geschuetztesLeerzeichenIstUngueltig() {
+        assertThrows(IllegalArgumentException.class, () -> new Titel("Neubau Hallenbad\u00A0"));
+    }
+
+    @Test
     @DisplayName("Negativ: mehr als 100 Zeichen wirft IllegalArgumentException")
     void mehrAlsHundertZeichenWirftException() {
         assertThrows(IllegalArgumentException.class, () -> new Titel("a".repeat(101)));
