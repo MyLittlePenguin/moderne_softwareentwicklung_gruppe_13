@@ -1,19 +1,17 @@
 package de.mse.votee_backend.abstimmungsverwaltung.application;
 
-import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.regex.Pattern;
 
+import de.mse.votee_backend.abstimmungsverwaltung.domain.model.Titel;
+
 /**
  * Validierung von Benutzereingaben aus Formularen vor der Umwandlung in Domänenobjekte.
  */
 public class AbstimmungEingabeValidator {
-
-    private static final Pattern TITEL_PATTERN =
-            Pattern.compile("^(?=.*[\\p{L}0-9])[\\p{L}0-9 ,.?!:()'\"/%€-]{3,100}$");
 
     private static final Pattern DATUM_PATTERN =
             Pattern.compile("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.20[0-9]{2} ([01][0-9]|2[0-3]):[0-5][0-9]$");
@@ -23,6 +21,7 @@ public class AbstimmungEingabeValidator {
 
     /**
      * Prüft, ob ein gegebener Titel den Eingaberegeln entspricht.
+     * Delegiert an das Domänen-Value-Object {@link Titel}.
      *
      * @param titel der zu prüfende Titel
      * @return true, falls gültig, sonst false
@@ -31,14 +30,12 @@ public class AbstimmungEingabeValidator {
         if (titel == null) {
             return false;
         }
-
-        // Unicode normalisieren (NFD zu NFC, z. B. macOS zerlegte Umlaute)
-        String normalisiert = Normalizer.normalize(titel, Normalizer.Form.NFC);
-
-        // Nur echte Leerzeichen am Rand werden ignoriert
-        String bereinigt = stripSpaces(normalisiert);
-
-        return TITEL_PATTERN.matcher(bereinigt).matches();
+        try {
+            new Titel(titel);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /**
@@ -58,17 +55,5 @@ public class AbstimmungEingabeValidator {
         } catch (DateTimeParseException e) {
             return false;
         }
-    }
-
-    private static String stripSpaces(String str) {
-        int start = 0;
-        while (start < str.length() && str.charAt(start) == ' ') {
-            start++;
-        }
-        int end = str.length();
-        while (end > start && str.charAt(end - 1) == ' ') {
-            end--;
-        }
-        return str.substring(start, end);
     }
 }

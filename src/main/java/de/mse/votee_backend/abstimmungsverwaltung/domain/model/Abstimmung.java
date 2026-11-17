@@ -13,14 +13,14 @@ public final class Abstimmung {
 
     private final AbstimmungId id;
     private final NutzerId erstelltVon;
-    private final String titel;
+    private final Titel titel;
     private final String beschreibung;
     private final Abstimmungszeitraum zeitraum;
     private final List<AbstimmOption> optionen;
 
     private Abstimmung(AbstimmungId id,
                        NutzerId erstelltVon,
-                       String titel,
+                       Titel titel,
                        String beschreibung,
                        Abstimmungszeitraum zeitraum,
                        List<AbstimmOption> optionen) {
@@ -33,11 +33,11 @@ public final class Abstimmung {
     }
 
     /**
-     * Erstellt eine neue Abstimmung nach Prüfung aller Fachregeln (Invarianten).
+     * Erstellt eine neue Abstimmung mit einem {@link Titel}-Objekt nach Prüfung aller Fachregeln (Invarianten).
      *
      * @param id           die eindeutige ID der Abstimmung
      * @param erstelltVon  die NutzerId der Erstellerin / des Erstellers
-     * @param titel        der Titel der Abstimmung
+     * @param titel        das Value Object des Titels
      * @param beschreibung die Beschreibung (optional)
      * @param zeitraum     der Abstimmungszeitraum
      * @param optionen     die Liste der Antwortoptionen (mindestens zwei)
@@ -45,7 +45,7 @@ public final class Abstimmung {
      */
     public static Abstimmung erstelle(AbstimmungId id,
                                       NutzerId erstelltVon,
-                                      String titel,
+                                      Titel titel,
                                       String beschreibung,
                                       Abstimmungszeitraum zeitraum,
                                       List<AbstimmOption> optionen) {
@@ -60,7 +60,7 @@ public final class Abstimmung {
         }
 
         // Regel 2: Titel ist nicht leer
-        if (titel == null || titel.isBlank()) {
+        if (titel == null) {
             throw new IllegalArgumentException("Titel darf nicht leer sein.");
         }
 
@@ -104,6 +104,26 @@ public final class Abstimmung {
         );
     }
 
+    /**
+     * Erstellt eine neue Abstimmung mit einem Titel als String (wird in ein {@link Titel}-Objekt umgewandelt).
+     *
+     * @param id           die eindeutige ID der Abstimmung
+     * @param erstelltVon  die NutzerId der Erstellerin / des Erstellers
+     * @param titel        der Titel als String
+     * @param beschreibung die Beschreibung (optional)
+     * @param zeitraum     der Abstimmungszeitraum
+     * @param optionen     die Liste der Antwortoptionen (mindestens zwei)
+     * @return die erstellte Abstimmung
+     */
+    public static Abstimmung erstelle(AbstimmungId id,
+                                      NutzerId erstelltVon,
+                                      String titel,
+                                      String beschreibung,
+                                      Abstimmungszeitraum zeitraum,
+                                      List<AbstimmOption> optionen) {
+        return erstelle(id, erstelltVon, new Titel(titel), beschreibung, zeitraum, optionen);
+    }
+
     public AbstimmungId getId() {
         return id;
     }
@@ -113,6 +133,10 @@ public final class Abstimmung {
     }
 
     public String getTitel() {
+        return titel.wert();
+    }
+
+    public Titel getTitelObjekt() {
         return titel;
     }
 
