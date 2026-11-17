@@ -50,17 +50,17 @@ public final class Abstimmung {
                                       List<AbstimmOption> optionen) {
         // Regel 0: Id ist gesetzt
         if (id == null) {
-            throw new IllegalArgumentException("AbstimmungId muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("AbstimmungId muss angegeben werden.");
         }
 
         // Regel 1: Ersteller ist gesetzt
         if (erstelltVon == null) {
-            throw new IllegalArgumentException("Ersteller (NutzerId) muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("Ersteller (NutzerId) muss angegeben werden.");
         }
 
         // Regel 2: Titel ist nicht leer
         if (titel == null) {
-            throw new IllegalArgumentException("Titel darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("Titel darf nicht leer sein.");
         }
 
         // Regel 3: Beschreibung ist optional (null oder blank wird zu leerem String)
@@ -68,7 +68,7 @@ public final class Abstimmung {
 
         // Regel 4: Zeitraum ist gesetzt
         if (zeitraum == null) {
-            throw new IllegalArgumentException("Abstimmungszeitraum muss angegeben werden.");
+            throw new AbstimmungsregelVerletztException("Abstimmungszeitraum muss angegeben werden.");
         }
 
         // Regel 5: mindestens zwei Optionen, keine Duplikate
@@ -86,20 +86,20 @@ public final class Abstimmung {
      */
     private static List<AbstimmOption> pruefeOptionen(List<AbstimmOption> optionen) {
         if (optionen == null) {
-            throw new IllegalArgumentException("Optionsliste darf nicht null sein.");
+            throw new AbstimmungsregelVerletztException("Optionsliste darf nicht null sein.");
         }
         if (optionen.size() < 2) {
-            throw new IllegalArgumentException("Eine Abstimmung muss mindestens zwei Optionen haben.");
+            throw new AbstimmungsregelVerletztException("Eine Abstimmung muss mindestens zwei Optionen haben.");
         }
 
         // Bewusst Schleife statt Stream: bricht beim ersten Duplikat ab und nennt es in der Meldung
         Set<String> normalisierteTexte = new HashSet<>();
         for (AbstimmOption option : optionen) {
             if (option == null) {
-                throw new IllegalArgumentException("Option darf nicht null sein.");
+                throw new AbstimmungsregelVerletztException("Option darf nicht null sein.");
             }
             if (!normalisierteTexte.add(option.normalisierterText())) {
-                throw new IllegalArgumentException("Doppelte Option gefunden: " + option.text());
+                throw new AbstimmungsregelVerletztException("Doppelte Option gefunden: " + option.text());
             }
         }
         return List.copyOf(optionen);

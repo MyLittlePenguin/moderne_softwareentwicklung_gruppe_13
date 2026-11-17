@@ -10,13 +10,13 @@ public record Abstimmungszeitraum(LocalDateTime beginn, LocalDateTime ende) {
 
     public Abstimmungszeitraum {
         if (beginn == null) {
-            throw new IllegalArgumentException("Beginn darf nicht null sein.");
+            throw new AbstimmungsregelVerletztException("Beginn darf nicht null sein.");
         }
         if (ende == null) {
-            throw new IllegalArgumentException("Ende darf nicht null sein.");
+            throw new AbstimmungsregelVerletztException("Ende darf nicht null sein.");
         }
         if (!ende.isAfter(beginn)) {
-            throw new IllegalArgumentException("Das Ende muss nach dem Beginn liegen.");
+            throw new AbstimmungsregelVerletztException("Das Ende muss nach dem Beginn liegen.");
         }
     }
 

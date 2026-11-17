@@ -9,7 +9,7 @@ public record AbstimmungId(String wert) {
 
     public AbstimmungId {
         if (wert == null || wert.isBlank()) {
-            throw new IllegalArgumentException("AbstimmungId darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("AbstimmungId darf nicht leer sein.");
         }
     }
 

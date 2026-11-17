@@ -11,7 +11,7 @@ public record AbstimmOption(String text) {
 
     public AbstimmOption {
         if (text == null || text.isBlank()) {
-            throw new IllegalArgumentException("Text einer Option darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("Text einer Option darf nicht leer sein.");
         }
     }
 

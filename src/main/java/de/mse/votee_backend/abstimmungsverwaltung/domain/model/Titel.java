@@ -17,7 +17,7 @@ public record Titel(String wert) {
 
     public Titel {
         if (wert == null || wert.isBlank()) {
-            throw new IllegalArgumentException("Titel darf nicht leer sein.");
+            throw new AbstimmungsregelVerletztException("Titel darf nicht leer sein.");
         }
 
         // Unicode normalisieren (NFD zu NFC, z. B. macOS zerlegte Umlaute)
@@ -28,12 +28,12 @@ public record Titel(String wert) {
 
         if (!TITEL_PATTERN.matcher(bereinigt).matches()) {
             if (bereinigt.length() < MIN_LAENGE) {
-                throw new IllegalArgumentException("Titel muss mindestens " + MIN_LAENGE + " Zeichen lang sein.");
+                throw new AbstimmungsregelVerletztException("Titel muss mindestens " + MIN_LAENGE + " Zeichen lang sein.");
             }
             if (bereinigt.length() > MAX_LAENGE) {
-                throw new IllegalArgumentException("Titel darf höchstens " + MAX_LAENGE + " Zeichen lang sein.");
+                throw new AbstimmungsregelVerletztException("Titel darf höchstens " + MAX_LAENGE + " Zeichen lang sein.");
             }
-            throw new IllegalArgumentException("Titel enthält ungültige Zeichen.");
+            throw new AbstimmungsregelVerletztException("Titel enthält ungültige Zeichen.");
         }
 
         wert = bereinigt;
