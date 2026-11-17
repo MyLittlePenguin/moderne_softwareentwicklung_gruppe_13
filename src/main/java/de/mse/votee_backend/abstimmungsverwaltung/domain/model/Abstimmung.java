@@ -63,8 +63,8 @@ public final class Abstimmung {
             throw new AbstimmungsregelVerletztException("Titel darf nicht leer sein.");
         }
 
-        // Regel 3: Beschreibung ist optional (null oder blank wird zu leerem String)
-        String bereinigteBeschreibung = (beschreibung == null || beschreibung.isBlank()) ? "" : beschreibung;
+        // Regel 3: Beschreibung ist optional (null oder blank wird zu leerem String), Rand-Leerzeichen entfallen
+        String bereinigteBeschreibung = beschreibung == null ? "" : beschreibung.strip();
 
         // Regel 4: Zeitraum ist gesetzt
         if (zeitraum == null) {

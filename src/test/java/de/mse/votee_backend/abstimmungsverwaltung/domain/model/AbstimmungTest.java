@@ -270,6 +270,14 @@ class AbstimmungTest {
         }
 
         @Test
+        @DisplayName("E3: Rand-Leerzeichen der Beschreibung werden entfernt (wie beim Titel)")
+        void beschreibungWirdGetrimmt() {
+            Abstimmung abstimmung = erstelleMitBeschreibung("  Soll gebaut werden?  ");
+
+            assertEquals("Soll gebaut werden?", abstimmung.getBeschreibung());
+        }
+
+        @Test
         @DisplayName("Aggregat kopiert die Optionsliste (spätere Änderung von außen wirkt nicht)")
         void optionenWerdenDefensivKopiert() {
             List<AbstimmOption> veraenderbar = new ArrayList<>(jaNein());
