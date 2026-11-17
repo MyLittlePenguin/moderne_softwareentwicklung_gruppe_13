@@ -136,6 +136,54 @@ Für `@ParameterizedTest` wurde `junit-jupiter-params` in der `pom.xml` ergänzt
 ## 3. Implementierung der Domänenlogik mit LLM-Pair-Programming (TDD Schritt 2)
 
 <!-- Pair-Programming-Prozess mit dem LLM (ca. 10–12 Sätze) -->
+
+Bearbeitung: Ronny (Implementierung), Hassan (Doku)
+
+**LLM-Einsatz:** ChatGPT 5.6 Sol, 17.11.2026, Branch `abgabe_04_implementation`. Interaktionen 1–8
+stehen im Interaktionslog ([../llm_log/interaktionslog.md](../llm_log/interaktionslog.md)), das
+LLM-Code-Review in [DDD_Review.md](DDD_Review.md). Der letzte Schritt (Value Object `Titel`) ist dort noch
+nicht protokolliert.
+
+**Pair-Programming-Prozess:**
+Wir haben dem LLM unsere Testsuite aus Aufgabe 2 gegeben und es gebeten, eine Implementierung zu erstellen,
+die die Tests erfüllt, und dabei eine Funktion nach der anderen anzugehen. Das LLM ging von innen nach
+außen vor (`NutzerId`, `Abstimmungszeitraum`, `AbstimmOption`, dann die Aggregate Root `Abstimmung` mit
+Factory-Methode und zuletzt der `AbstimmungEingabeValidator`) und führte nach jedem Schritt die passende
+Testklasse aus, sodass jeder Schritt einzeln nachvollziehbar blieb. Hilfreich war es auch bei der
+Fehlersuche, als `mvn test` lokal scheiterte: Fedora erzwingt über `/etc/java/maven.conf` Java 25, während
+der Maven-Wrapper `./mvnw` das aktive Java 27 nutzt. Anschließend ließen wir das LLM den Code auf
+DDD-Prinzipien reviewen; es fand vier Lücken: keine Identität der Abstimmung, ein anämisches Modell ohne
+fachliches Verhalten, kein Domain Event und eine Titelregel nur im Validator der Application-Schicht.
+Daraufhin haben wir testgetrieben `AbstimmungId` (Record, Factory `neu()` mit UUID, ID-basiertes
+`equals`/`hashCode`) und fachliche Methoden wie `istLaufend` und `kannErgebnisEingesehenWerden` ergänzt und
+die Titelregel in ein Value Object `Titel` verschoben, an das der Validator nun delegiert. Gut eingesetzt
+hat das LLM Records mit kompaktem Konstruktor zur Selbstvalidierung und `List.copyOf` für eine
+unveränderliche Optionsliste. Streams, Lambdas, Optional und Generics hat es dagegen nicht verwendet:
+Duplikatprüfung und `hatOption` sind klassische Schleifen, wo `anyMatch` lesbarer wäre. Für Wartbarkeit
+und Lesbarkeit kritisch sind außerdem zwei überladene `erstelle`-Methoden (mit `String` und mit `Titel`)
+und ein englischer Alias `Title` neben `Titel`, der unserer Ubiquitous Language widerspricht und keinen
+Mehrwert hat. Korrigieren mussten wir auch, dass das Review nach dem letzten Refactoring die Titelregel
+noch als offen führte; Aussagen des LLM zum eigenen Stand haben wir deshalb gegen den Code geprüft. Die
+vom LLM gemeldeten Testergebnisse (zuletzt 149 grüne Tests vor dem `Titel`-Schritt) haben wir lokal mit
+`./mvnw test` (Java 27) nachvollzogen: Nach dem `Titel`-Schritt laufen alle 173 Tests grün, darunter 24 neue
+Tests für `Titel`. Offen für Aufgabe 4 bleiben das Domain
+Event `AbstimmungErstellt` (die im 4.2-Testentwurf vorgeschlagene Methode `domainEvents()` hatten wir
+bewusst entfernt), das `AbstimmungRepository` und fachliche Exceptions statt `IllegalArgumentException`.
+
+## 4. Test-Erweiterung und Refaktorisierung (TDD Schritt 3)
+
+<!-- Umgesetzte und abgelehnte Refactoring-Vorschläge (ca. 5–6 Sätze) -->
+
+## 5. Modularität und Testbarkeit via CI/CD
+
+<!-- Modularität, Bounded Contexts, CI-Pipeline inkl. Tests (ca. 8–10 Sätze) -->
+
+## 6. Kritische Reflexion zu TDD, DDD und LLM-gestützter Entwicklung
+
+<!-- Chancen und Risiken (ca. 10–15 Sätze) -->
+
+### Erfahrungsbericht Ronny (aus Aufgabe 3 hierher verschoben)
+
 Vorweg möchte ich mitteilen, dass ich auf Arbeit auch bereits genötigt werde, mit
 LLM-Systemen zur Software-Entwicklung zu arbeiten. Das ist der Grund, warum ich
 nach 15 leidenschaftlichen Jahren als Software-Entwickler, Bewerbungen schreibe,
@@ -173,15 +221,3 @@ allerdings mit zunehmender Code Menge, die generiert wird, immer schwieriger.
 Mein Kostenloses Kontingent an Tokens war relativ schnell erreicht. Ich konnte
 nicht einmal die Aufgabe 4.3 vollständig bearbeiten, sodass ein Team-Kollege
 übernehmen musste.
-
-## 4. Test-Erweiterung und Refaktorisierung (TDD Schritt 3)
-
-<!-- Umgesetzte und abgelehnte Refactoring-Vorschläge (ca. 5–6 Sätze) -->
-
-## 5. Modularität und Testbarkeit via CI/CD
-
-<!-- Modularität, Bounded Contexts, CI-Pipeline inkl. Tests (ca. 8–10 Sätze) -->
-
-## 6. Kritische Reflexion zu TDD, DDD und LLM-gestützter Entwicklung
-
-<!-- Chancen und Risiken (ca. 10–15 Sätze) -->
