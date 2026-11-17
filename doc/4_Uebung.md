@@ -64,6 +64,43 @@ Für `@ParameterizedTest` wurde `junit-jupiter-params` in der `pom.xml` ergänzt
 ## 3. Implementierung der Domänenlogik mit LLM-Pair-Programming (TDD Schritt 2)
 
 <!-- Pair-Programming-Prozess mit dem LLM (ca. 10–12 Sätze) -->
+Vorweg möchte ich mitteilen, dass ich auf Arbeit auch bereits genötigt werde, mit
+LLM-Systemen zur Software-Entwicklung zu arbeiten. Das ist der Grund, warum ich
+nach 15 leidenschaftlichen Jahren als Software-Entwickler, Bewerbungen schreibe,
+um diesen Job aufzugeben und nur noch in meiner Freizeit Software für mich zu
+entwickeln.
+
+**zu meinem Erlebnis bei dieser Aufgabe:** Ich nutze ein kostenloses Kontingent,
+da ich nicht bereit bin, Geld für LLM-Tools auszugeben. Das geht
+selbstverständlich mit Einschränkungen einher. Ich werde regelmäßig darauf
+hingewiesen, dass die Last auf den Servern gerade zu hoch sei und ich es in
+wenigen Minuten erneut versuchen soll. Das ist frustrierend. Grundsätzlich eine
+erste Implementation zu generieren, welche die Tests erfüllt hat dennoch relativ
+Problemlos funktioniert. Der Quellcode war gut lesbar und verständlich. Das
+einzige, was schwer zu verstehen ist, ist einer der regulären Ausdrücke für die
+Input-Validierung. Das ist allerdings auch allgemein nicht unüblich bei
+regulären ausdrücken, wenn man diese zu einem späteren Zeitpunkt sich erneut
+ansehen möchte. Dieses inhärente Problem von regulären Ausdrücken kann nicht
+seriös LLM's angelastet werden.
+
+Ein Review mit diesen LLM-Tools funktioniert meiner Erfahrung unzuverlässig gut.
+Oft werden Probleme gefunden, die man als Mensch schnell übersehen kann.
+Allerdings werden auch Probleme gefunden, die nicht real sind. Beim beheben
+kommt es gelegentlich durchaus vor, dass andere Teile "beschädigt" werden und
+Fehler eingebaut werden. Grundsätzlich funktionieren Reviews oft in einer
+neuen Session besser. In diesem noch sehr kleinen Projekt hat das Review gut
+funktioniert. Die Prinzipien von DDD wurden mit überprüft und sinnvolle
+Anmerkungen für die Korrektheit und die Einhaltung von DDD wurden zurück
+gegeben, mit denen nach und nach in Dialog-Form die Probleme behoben werden
+konnten. Grundsätzlich sollte man, wenn man mit LLM's Code generiert immer
+mehrere LLM-Review-/Problembehebungsschleifen durchführen, da im Review oft
+festgestellt wird, dass der von der LLM generierte Code noch Fehler enthält oder
+Refaktoriert werden sollte. Menschliches Review wird auch immer empfohlen, wird
+allerdings mit zunehmender Code Menge, die generiert wird, immer schwieriger.
+
+Mein Kostenloses Kontingent an Tokens war relativ schnell erreicht. Ich konnte
+nicht einmal die Aufgabe 4.3 vollständig bearbeiten, sodass ein Team-Kollege
+übernehmen musste.
 
 ## 4. Test-Erweiterung und Refaktorisierung (TDD Schritt 3)
 
