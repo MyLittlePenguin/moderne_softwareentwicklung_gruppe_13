@@ -2,8 +2,12 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +41,7 @@ class AbstimmungTest {
 
     // Feste Testdaten – keine LocalDateTime.now(), damit die Tests reproduzierbar
     // sind
+    private static final AbstimmungId ABSTIMMUNG_ID = new AbstimmungId("abst-42");
     private static final NutzerId VERWALTUNGSANGESTELLTE = new NutzerId("va-4711");
     private static final String TITEL = "Neubau Hallenbad";
     private static final String BESCHREIBUNG = "Soll die Stadt ein neues Hallenbad bauen?";
@@ -57,19 +62,23 @@ class AbstimmungTest {
 
     // Hilfsmethoden: alles gültig außer dem einen Parameter, der getestet wird
     private static Abstimmung erstelleMitTitel(String titel) {
-        return Abstimmung.erstelle(VERWALTUNGSANGESTELLTE, titel, BESCHREIBUNG, gueltigerZeitraum(), jaNein());
+        return Abstimmung.erstelle(ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, titel, BESCHREIBUNG,
+                gueltigerZeitraum(), jaNein());
     }
 
     private static Abstimmung erstelleMitBeschreibung(String beschreibung) {
-        return Abstimmung.erstelle(VERWALTUNGSANGESTELLTE, TITEL, beschreibung, gueltigerZeitraum(), jaNein());
+        return Abstimmung.erstelle(ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, TITEL, beschreibung,
+                gueltigerZeitraum(), jaNein());
     }
 
     private static Abstimmung erstelleMitZeitraum(Abstimmungszeitraum zeitraum) {
-        return Abstimmung.erstelle(VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG, zeitraum, jaNein());
+        return Abstimmung.erstelle(ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG,
+                zeitraum, jaNein());
     }
 
     private static Abstimmung erstelleMitOptionen(List<AbstimmOption> optionen) {
-        return Abstimmung.erstelle(VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG, gueltigerZeitraum(), optionen);
+        return Abstimmung.erstelle(ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG,
+                gueltigerZeitraum(), optionen);
     }
 
     // =====================================================================
@@ -81,9 +90,10 @@ class AbstimmungTest {
         @DisplayName("übernimmt alle Angaben der Verwaltungsangestellten")
         void erstelltAbstimmungMitAllenAngaben() {
             Abstimmung abstimmung = Abstimmung.erstelle(
-                    VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG, gueltigerZeitraum(), jaNein());
+                    ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG, gueltigerZeitraum(), jaNein());
 
             assertAll(
+                    () -> assertEquals(ABSTIMMUNG_ID, abstimmung.getId()),
                     () -> assertEquals(VERWALTUNGSANGESTELLTE, abstimmung.getErstelltVon()),
                     () -> assertEquals(TITEL, abstimmung.getTitel()),
                     () -> assertEquals(BESCHREIBUNG, abstimmung.getBeschreibung()),
@@ -155,13 +165,24 @@ class AbstimmungTest {
     @DisplayName("Negativtests (Regel verletzt → IllegalArgumentException)")
     class Negativtests {
 
+        // --- Regel 0: AbstimmungId ist gesetzt ----------------------------
+
+        @Test
+        @DisplayName("Regel 0: AbstimmungId fehlt (null)")
+        void abstimmungIdFehlt() {
+            assertThrows(IllegalArgumentException.class,
+                    () -> Abstimmung.erstelle(null, VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG,
+                            gueltigerZeitraum(), jaNein()));
+        }
+
         // --- Regel 1: Ersteller ist gesetzt -------------------------------
 
         @Test
         @DisplayName("Regel 1: Ersteller fehlt (null)")
         void erstellerFehlt() {
             assertThrows(IllegalArgumentException.class,
-                    () -> Abstimmung.erstelle(null, TITEL, BESCHREIBUNG, gueltigerZeitraum(), jaNein()));
+                    () -> Abstimmung.erstelle(ABSTIMMUNG_ID, null, TITEL, BESCHREIBUNG,
+                            gueltigerZeitraum(), jaNein()));
         }
 
         // --- Regel 2: Titel ist nicht leer --------------------------------
@@ -249,6 +270,14 @@ class AbstimmungTest {
         }
 
         @Test
+        @DisplayName("E3: Rand-Leerzeichen der Beschreibung werden entfernt (wie beim Titel)")
+        void beschreibungWirdGetrimmt() {
+            Abstimmung abstimmung = erstelleMitBeschreibung("  Soll gebaut werden?  ");
+
+            assertEquals("Soll gebaut werden?", abstimmung.getBeschreibung());
+        }
+
+        @Test
         @DisplayName("Aggregat kopiert die Optionsliste (spätere Änderung von außen wirkt nicht)")
         void optionenWerdenDefensivKopiert() {
             List<AbstimmOption> veraenderbar = new ArrayList<>(jaNein());
@@ -274,6 +303,154 @@ class AbstimmungTest {
         void duplikateWerdenNormalisiertErkannt(String variante) {
             assertThrows(IllegalArgumentException.class,
                     () -> erstelleMitOptionen(List.of(new AbstimmOption("Ja"), new AbstimmOption(variante))));
+        }
+
+        @Test
+        @DisplayName("E1: Duplikate werden auch in zerlegter Unicode-Form (NFD) erkannt")
+        void duplikateInNfdFormWerdenErkannt() {
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> erstelleMitOptionen(List.of(new AbstimmOption("Grün"), new AbstimmOption(nfd))));
+        }
+    }
+
+    // =====================================================================
+    @Nested
+    @DisplayName("Entitäts-Gleichheit (Entity Identity)")
+    class EntitaetsGleichheit {
+
+        @Test
+        @DisplayName("gleiche AbstimmungId bedeutet Gleichheit (unabhängig von Attributen)")
+        void gleicheIdBedeutetGleichheit() {
+            Abstimmung a1 = Abstimmung.erstelle(
+                    ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, "Titel 1", BESCHREIBUNG,
+                    gueltigerZeitraum(), jaNein());
+            Abstimmung a2 = Abstimmung.erstelle(
+                    ABSTIMMUNG_ID, new NutzerId("va-9999"), "Anderer Titel", "",
+                    gueltigerZeitraum(), optionen("A", "B"));
+
+            assertAll(
+                    () -> assertEquals(a1, a2),
+                    () -> assertEquals(a1.hashCode(), a2.hashCode()));
+        }
+
+        @Test
+        @DisplayName("unterschiedliche AbstimmungId bedeutet Ungleichheit (selbst bei identischen Attributen)")
+        void unterschiedlicheIdBedeutetUngleichheit() {
+            Abstimmung a1 = Abstimmung.erstelle(
+                    new AbstimmungId("abst-1"), VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG,
+                    gueltigerZeitraum(), jaNein());
+            Abstimmung a2 = Abstimmung.erstelle(
+                    new AbstimmungId("abst-2"), VERWALTUNGSANGESTELLTE, TITEL, BESCHREIBUNG,
+                    gueltigerZeitraum(), jaNein());
+
+            assertNotEquals(a1, a2);
+        }
+
+        @Test
+        @DisplayName("Vergleich mit null oder anderem Typ liefert false")
+        void vergleichMitNullOderAnderemTyp() {
+            Abstimmung a = erstelleMitTitel(TITEL);
+
+            assertAll(
+                    () -> assertNotEquals(null, a),
+                    () -> assertNotEquals("keine Abstimmung", a));
+        }
+    }
+
+    // =====================================================================
+    @Nested
+    @DisplayName("Fachliches Verhalten (Domain Behavior)")
+    class FachlichesVerhalten {
+
+        @Test
+        @DisplayName("istLaufend prüft, ob die Abstimmung im Zeitraum aktiv ist")
+        void istLaufendPrueftAktivitaet() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.istLaufend(BEGINN.minusMinutes(1))),
+                    () -> assertTrue(abstimmung.istLaufend(BEGINN)),
+                    () -> assertTrue(abstimmung.istLaufend(BEGINN.plusDays(1))),
+                    () -> assertTrue(abstimmung.istLaufend(ENDE)),
+                    () -> assertFalse(abstimmung.istLaufend(ENDE.plusMinutes(1))),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istLaufend(null)));
+        }
+
+        @Test
+        @DisplayName("istBeendet prüft, ob die Frist abgelaufen ist")
+        void istBeendetPrueftFristablauf() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.istBeendet(BEGINN.minusDays(1))),
+                    () -> assertFalse(abstimmung.istBeendet(BEGINN)),
+                    () -> assertFalse(abstimmung.istBeendet(ENDE)),
+                    () -> assertTrue(abstimmung.istBeendet(ENDE.plusMinutes(1))),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istBeendet(null)));
+        }
+
+        @Test
+        @DisplayName("istNochNichtGestartet prüft, ob die Abstimmung in der Zukunft liegt")
+        void istNochNichtGestartetPrueftBeginn() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertTrue(abstimmung.istNochNichtGestartet(BEGINN.minusMinutes(1))),
+                    () -> assertFalse(abstimmung.istNochNichtGestartet(BEGINN)),
+                    () -> assertFalse(abstimmung.istNochNichtGestartet(ENDE)),
+                    () -> assertThrows(IllegalArgumentException.class, () -> abstimmung.istNochNichtGestartet(null)));
+        }
+
+        @Test
+        @DisplayName("kannAbgestimmtWerden ist nur während der Laufzeit true")
+        void kannAbgestimmtWerdenSemantik() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.kannAbgestimmtWerden(BEGINN.minusMinutes(1))),
+                    () -> assertTrue(abstimmung.kannAbgestimmtWerden(BEGINN)),
+                    () -> assertTrue(abstimmung.kannAbgestimmtWerden(ENDE)),
+                    () -> assertFalse(abstimmung.kannAbgestimmtWerden(ENDE.plusMinutes(1))));
+        }
+
+        @Test
+        @DisplayName("kannErgebnisEingesehenWerden ist erst nach Fristablauf true")
+        void kannErgebnisEingesehenWerdenSemantik() {
+            Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
+
+            assertAll(
+                    () -> assertFalse(abstimmung.kannErgebnisEingesehenWerden(BEGINN)),
+                    () -> assertFalse(abstimmung.kannErgebnisEingesehenWerden(ENDE)),
+                    () -> assertTrue(abstimmung.kannErgebnisEingesehenWerden(ENDE.plusMinutes(1))));
+        }
+
+        @Test
+        @DisplayName("hatOption prüft Existenz einer Option anhand von Objekt oder Text normalisiert")
+        void hatOptionPrueftOptionen() {
+            Abstimmung abstimmung = erstelleMitOptionen(optionen("Ja", "Nein"));
+
+            assertAll(
+                    () -> assertTrue(abstimmung.hatOption(new AbstimmOption("Ja"))),
+                    () -> assertTrue(abstimmung.hatOption(new AbstimmOption(" ja "))),
+                    () -> assertTrue(abstimmung.hatOption("Ja")),
+                    () -> assertTrue(abstimmung.hatOption(" ja ")),
+                    () -> assertTrue(abstimmung.hatOption("JA")),
+                    () -> assertFalse(abstimmung.hatOption(new AbstimmOption("Vielleicht"))),
+                    () -> assertFalse(abstimmung.hatOption("Vielleicht")),
+                    () -> assertFalse(abstimmung.hatOption((AbstimmOption) null)),
+                    () -> assertFalse(abstimmung.hatOption((String) null)),
+                    () -> assertFalse(abstimmung.hatOption("   ")));
+        }
+
+        @Test
+        @DisplayName("E1: hatOption findet eine Option auch in zerlegter Unicode-Form (NFD)")
+        void hatOptionErkenntNfdForm() {
+            Abstimmung abstimmung = erstelleMitOptionen(optionen("Grün", "Rot"));
+            String nfd = Normalizer.normalize("Grün", Normalizer.Form.NFD);
+
+            assertTrue(abstimmung.hatOption(nfd));
         }
     }
 }
