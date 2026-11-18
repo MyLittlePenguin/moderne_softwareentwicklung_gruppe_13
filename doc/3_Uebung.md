@@ -245,13 +245,13 @@ flowchart LR
    Oberfläche folgt in einer späteren Übung.
 3. Test zuerst (TDD): Vor jeder Implementierung entsteht der Test (Übung 4).
 4. Modularität: Jeder Bounded Context ist ein eigener Paketbaum. Contexts kennen
-   einander nur über IDs, Events und definierte Schnittstellen.
+   einander nur über IDs und definierte Schnittstellen.
 5. Testbarkeit: Die Domänenschicht kommt ohne Framework aus.
    Helidon als Webserver und für die Infrastruktur um JDBC zu verwenden.
    Wir nutzen Dependency Injection. Organisieren unser Projekt in der
    Hexagonalen Architektur und definieren für die Repositories Interfaces.
-   Wir testen nur die Domain-Logik. Wir testen somit nur die Adapter.
-
+   Die Domänenlogik testen wir mit reinen Unit-Tests. Anwendungsservices testen
+   wir bei Bedarf mit einem In-Memory-Repository.
 
 ## Paketstruktur
 
