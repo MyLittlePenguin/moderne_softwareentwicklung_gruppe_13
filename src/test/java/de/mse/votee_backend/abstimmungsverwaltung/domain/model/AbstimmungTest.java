@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -102,6 +103,17 @@ class AbstimmungTest {
         }
 
         @Test
+        @DisplayName("Übung 5.2: Titel-Überladung speichert das übergebene Titel-Objekt")
+        void titelUeberladungSpeichertTitelObjekt() {
+            Titel titel = new Titel(TITEL);
+
+            Abstimmung abstimmung = Abstimmung.erstelle(
+                    ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, titel, BESCHREIBUNG, gueltigerZeitraum(), jaNein());
+
+            assertSame(titel, abstimmung.getTitelObjekt());
+        }
+
+        @Test
         @DisplayName("Frist ist das Ende des Zeitraums")
         void fristIstEndeDesZeitraums() {
             Abstimmung abstimmung = erstelleMitZeitraum(gueltigerZeitraum());
@@ -193,6 +205,15 @@ class AbstimmungTest {
         @DisplayName("Regel 2: Titel ist leer oder besteht nur aus Leerraum")
         void titelIstLeer(String titel) {
             assertThrows(IllegalArgumentException.class, () -> erstelleMitTitel(titel));
+        }
+
+        @Test
+        @DisplayName("Übung 5.2: Regel 2: Titel-Objekt fehlt (null) bei der Titel-Überladung")
+        void titelObjektFehlt() {
+            // Cast nötig, damit der Compiler die Überladung mit Titel statt String wählt
+            assertThrows(IllegalArgumentException.class,
+                    () -> Abstimmung.erstelle(ABSTIMMUNG_ID, VERWALTUNGSANGESTELLTE, (Titel) null, BESCHREIBUNG,
+                            gueltigerZeitraum(), jaNein()));
         }
 
         // --- Regel 4: Ende liegt nach Beginn ------------------------------
@@ -353,9 +374,11 @@ class AbstimmungTest {
         void vergleichMitNullOderAnderemTyp() {
             Abstimmung a = erstelleMitTitel(TITEL);
 
+            // Übung 5.2: equals direkt auf a aufrufen. assertNotEquals(null, a) bzw.
+            // assertNotEquals("keine Abstimmung", a) riefen Abstimmung.equals nie auf (JaCoCo).
             assertAll(
-                    () -> assertNotEquals(null, a),
-                    () -> assertNotEquals("keine Abstimmung", a));
+                    () -> assertFalse(a.equals(null)),
+                    () -> assertFalse(a.equals("keine Abstimmung")));
         }
     }
 

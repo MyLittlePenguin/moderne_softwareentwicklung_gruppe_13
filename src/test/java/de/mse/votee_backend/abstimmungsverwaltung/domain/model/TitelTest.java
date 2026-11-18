@@ -1,5 +1,6 @@
 package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,5 +89,23 @@ class TitelTest {
     @DisplayName("Negativ: mehr als 100 Zeichen wirft IllegalArgumentException")
     void mehrAlsHundertZeichenWirftException() {
         assertThrows(IllegalArgumentException.class, () -> new Titel("a".repeat(101)));
+    }
+
+    @Test
+    @DisplayName("Übung 5.2: unsichtbares Zero Width Space (U+200B) ist ein ungültiges Zeichen")
+    void zeroWidthSpaceIstUngueltig() {
+        assertThrows(IllegalArgumentException.class, () -> new Titel("Neubau\u200BHallenbad"));
+    }
+
+    @Test
+    @DisplayName("Übung 5.2: Zeichen außerhalb der BMP zählen bei der Länge doppelt (UTF-16)")
+    void zeichenAusserhalbBmpZaehlenDoppelt() {
+        // "\uD801\uDC00" = U+10400, ein Buchstabe, der in Java aus zwei char besteht.
+        // 50 dieser Buchstaben = 100 char (gültig), 51 = 102 char (zu lang).
+        // Dokumentiert das aktuelle Verhalten; fachlich offen, ob "100 Zeichen" so gemeint ist.
+        String buchstabe = "\uD801\uDC00";
+        assertAll(
+                () -> assertDoesNotThrow(() -> new Titel(buchstabe.repeat(50))),
+                () -> assertThrows(IllegalArgumentException.class, () -> new Titel(buchstabe.repeat(51))));
     }
 }

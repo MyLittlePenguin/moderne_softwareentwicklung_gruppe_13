@@ -68,9 +68,62 @@ Prompt und vollständige Antwort: [5_1_LLM_Prompt_und_Antwort.md](5_1_LLM_Prompt
 
 ## 2. Test Coverage erweitern und Code Coverage verbessern
 
-**Tool:**
+**Tool:** JaCoCo 0.8.16 (erste Version mit offizieller Java-27-Unterstützung), eingebunden in `pom.xml`
+(`prepare-agent` + `report` in der Phase `verify`). Bericht nach `./mvnw clean verify` unter
+`target/site/jacoco/index.html`.
 
-**LLM-Einsatz:**
+**Begriffe (Skript S. 134):** *Instruction Coverage* misst, welcher Anteil der Bytecode-Befehle beim Testlauf ausgeführt
+wurde. *Branch Coverage* misst, welcher Anteil der Verzweigungen (`if`, `&&`, `||`, Schleifen) in beiden Richtungen
+durchlaufen wurde. Beides sagt nur, *dass* Code lief, nicht, *ob* die Tests das fachlich Richtige prüfen.
+
+### Ausgangslage und Ergebnis
+
+| Paket | Instructions vorher | Instructions nachher | Branches vorher | Branches nachher |
+| --- | --- | --- | --- | --- |
+| `abstimmungsverwaltung.domain.model` | 98 % | **100 %** | 94 % | **97 %** |
+| `abstimmungsverwaltung.application` | 100 % | 100 % | 100 % | 100 % |
+| `de.mse.votee_backend` (Helidon-Start) | 80 % | 80 % | n/a | n/a |
+| **Gesamt** | **94 %** | **96 %** | **95 %** | **97 %** |
+
+Das Ziel von ca. 80 % war schon vorher erreicht. Deshalb wurde gezielt der **kritische Bereich** untersucht: die
+Domäne (`domain.model`) mit den Fachregeln der Aggregate Root `Abstimmung` und dem Value Object `Titel`.
+Der Startcode in `de.mse.votee_backend` (`Main`, `PageService`, `Templates`) enthält keine Fachlogik und wird bewusst
+nicht weiter abgedeckt.
+
+### Gefundene Lücken in `domain.model`
+
+| Stelle | Lücke | Ursache | Maßnahme |
+| --- | --- | --- | --- |
+| `Abstimmung.erstelle(..., Titel, ...)` | Zweig `titel == null` | alle Tests nutzen die `String`-Überladung, dort wirft schon `new Titel(null)` | neuer Test `titelObjektFehlt` mit `(Titel) null` |
+| `Abstimmung.getTitelObjekt()` | nie aufgerufen | keine Verwendung im Code und in Tests (offener Punkt R12 aus Übung 4.4) | neuer Test `titelUeberladungSpeichertTitelObjekt` mit `assertSame` |
+| `Abstimmung.equals(Object)` | Zweig „kein `Abstimmung`-Objekt“ | **Testfehler:** `assertNotEquals(null, a)` ruft `a.equals` nie auf, `assertNotEquals("…", a)` ruft `String.equals` auf | bestehenden Test korrigiert: `assertFalse(a.equals(null))`, `assertFalse(a.equals("…"))` |
+| `Titel.stripSpaces(String)` | 2 von 8 Zweigen | nur bei reinem Leerzeichen-String erreichbar, den der Konstruktor vorher per `isBlank()` ablehnt | **bewusst akzeptiert**: Schutzabfrage, über die öffentliche Schnittstelle nicht erreichbar |
+
+Die korrigierte `equals`-Prüfung ist die wichtigste Erkenntnis: Der Test war grün, hat aber nicht geprüft, was sein
+Name verspricht. Erst die Branch Coverage hat das sichtbar gemacht.
+
+**LLM-Einsatz:** ChatGPT GPT-6 Medium, 18.11.2026, neuer Chat ohne Vorwissen. Prompt mit den vier Lücken und der
+Frage nach Edge Cases für die komplexesten Methoden (`Titel`-Konstruktor, `pruefeOptionen`).
+Prompt und vollständige Antwort: [5_2_LLM_Prompt_und_Antwort.md](5_2_LLM_Prompt_und_Antwort.md).
+
+### Kritische Bewertung der LLM-Vorschläge
+
+| LLM-Vorschlag | Bewertung | Begründung |
+| --- | --- | --- |
+| Tests für Lücken 1–3 | ✅ übernommen (angepasst an vorhandene Fixtures) | Erklärung zur Argumentreihenfolge bei `assertNotEquals` korrekt |
+| `stripSpaces`-Zweige nicht per Reflection erzwingen | ✅ zugestimmt | private Schutzabfrage, kein fachlicher Fall |
+| EC 1: NFD-Umlaut wird normalisiert | ❌ schon vorhanden | `TitelTest.unicodeNfdWirdNormalisiert` |
+| EC 2: Zeichen außerhalb der BMP zählen doppelt | ✅ neu (`zeichenAusserhalbBmpZaehlenDoppelt`) | dokumentiert aktuelles Verhalten (50 gültig, 51 zu lang); fachlich offen, ob „100 Zeichen“ so gemeint ist |
+| EC 3: Zero Width Space (U+200B) | ✅ neu (`zeroWidthSpaceIstUngueltig`) | unsichtbares Zeichen aus Copy & Paste |
+| EC 4: „Ja“ und „ ja “ als Duplikat | ❌ schon vorhanden | `AbstimmungTest`, Abschnitt Annahmen |
+| EC 5: Optionsliste unveränderlich | ❌ schon vorhanden | `AbstimmungTest`, Abschnitt Annahmen |
+
+Drei der fünf Edge Cases waren bereits getestet, weil das LLM die Testklassen nicht kannte. Neue Tests insgesamt:
+4 (+ 1 korrigierter Test), Testanzahl von 190 auf 194.
+
+**Fazit:** 100 % Coverage ist kein sinnvolles Ziel. Die verbleibenden 2 Zweige sind nicht erreichbar, und die
+wertvollste Verbesserung (der `equals`-Test) hat die Coverage nur um einen Zweig erhöht, aber einen falschen Test
+aufgedeckt.
 
 ## 3. Technical Debt und Regelverletzungen mit LLM analysieren
 

@@ -18,6 +18,7 @@
 		<version.lib.thymeleaf>3.1.7.RELEASE</version.lib.thymeleaf>
 		<version.plugin.checkstyle>3.6.0</version.plugin.checkstyle>
 		<version.lib.checkstyle>14.4.0</version.lib.checkstyle>
+		<version.plugin.jacoco>0.8.16</version.plugin.jacoco>
 	</properties>
 
 	<dependencies>
@@ -115,6 +116,27 @@
 				<executions>
 					<execution>
 						<id>copy-libs</id>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Testabdeckung: Bericht nach ./mvnw verify unter target/site/jacoco/index.html -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${version.plugin.jacoco}</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
