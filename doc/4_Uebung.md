@@ -2,78 +2,6 @@
 
 ## 1. Review der Implementierungsstrategie
 
-**Gegenstand:** Implementierungsstrategie, Domänenmodell, Services und Bounded Contexts aus
-[3_Uebung.md](3_Uebung.md).
-
-### (a) Schwachstellen der Strategie
-
-1. **Event-Namen passen nicht zum Board.** Die Strategie nennt „Bürgerin erstellt“, das Board
-   „Bürger registriert“. „Abstimmung abgeschlossen“ gibt es auf dem Board nicht, dort stehen nur die
-   Policy „Nach Fristablauf“ und „Ergebnis angezeigt“.
-2. **Widerspruch in der Teststrategie.** „Wir testen nur die Domain-Logik. Wir testen somit nur die
-   Adapter.“ Sinnvoll wären reine Unit-Tests ohne Framework für die Domäne und wenige
-   Integrationstests für die Adapter (H2-Repository, HTTP).
-3. **Paketstruktur widerspricht Punkt 4.** Laut Einrückung liegen `domain`, `application` und
-   `infrastructure` neben `abstimmungsverwaltung` statt darunter. Stimmabgabe, Kontoverwaltung und
-   Abstimmungsansicht fehlen ganz.
-4. **Anonymität vs. „nur einmal wählen“.** Die Stimme soll keinen Bezug zum Bürger haben, aber
-   `stimmeAb(abstimmungsId, abstimmOption, buergerinnenId)` und die Beziehung Bürgerin–Stimmabgabe im
-   Domänenmodell koppeln beides. Vorschlag: eine **Teilnahme** (wer hat gewählt, sichert „nur
-   einmal“) getrennt von der anonymen **Stimme** (was wurde gewählt).
-5. **AbstimmungsService ist kein Domain Service.** Er lädt und speichert über das Repository und ist
-   damit ein Anwendungsservice. Ein Domain Service wäre z. B. „E-Mail nur einmal je Kontoart“.
-6. **Unklar, wer „Abstimmung beendet“ auslöst.** Ohne Scheduler ist es einfacher, den Status aus dem
-   Abstimmungszeitraum und einer injizierten `Clock` abzuleiten, statt ein Event aktiv auszulösen.
-
-### (b) Strukturierung der Domain-Events
-
-- **Einheitliche Namen** in der Vergangenheitsform, je einem Context zugeordnet:
-
-  | Context               | Events                                   |
-  | --------------------- | ---------------------------------------- |
-  | Kontoverwaltung       | `BuergerRegistriert`, `ZweiFaktorAktiviert` |
-  | Abstimmungsverwaltung | `AbstimmungErstellt`, `AbstimmungBeendet`   |
-  | Stimmabgabe           | `StimmeAbgegeben`                           |
-
-- **„Ergebnis angezeigt“ und „Authentifiziert“ streichen.** Das Anzeigen ist eine Abfrage, keine
-  fachliche Zustandsänderung, und die Authentifizierung ist technisch. Falls fachlich relevant, besser
-  `ErgebnisFestgestellt`.
-- **Payload nur mit IDs und dem Nötigsten:** `AbstimmungErstellt(abstimmungId, zeitraum, optionIds)`,
-  `StimmeAbgegeben(abstimmungId, optionId)` ohne Bürger-ID.
-- **Wichtigste Events:** `AbstimmungErstellt`, `StimmeAbgegeben`, `AbstimmungBeendet`.
-
-### (c) Entwicklungsreihenfolge
-
-1. **Durchstich pro Event statt Schicht für Schicht:** Value Objects und Entities → Repository-Port →
-   Anwendungsservice mit In-Memory-Repository → erst dann der H2-Adapter. So sind Service und Regeln
-   testbar, bevor es eine Datenbank gibt.
-2. **Mit dem Kern beginnen:** `AbstimmungErstellt` → `StimmeAbgegeben` → `AbstimmungBeendet` mit
-   Ergebnis.
-3. **Kontoverwaltung zuletzt.** Sie ist eine generische Subdomäne. Bis dahin genügt ein Fake hinter der
-   Schnittstelle `IstVa`/`IstBuerger` (die VA ist ohnehin ein fester Superuser, dazu ein Test-Bürger).
-   Die Schnittstelle existiert von Anfang an, damit die Authentifizierung nicht nachträglich
-   eingebaut werden muss.
-4. **Zwei-Faktor ganz am Ende:** fachlich am wenigsten wert, technisch am aufwändigsten.
-
-### Bewertung
-
-- **Keine eventbasierte Architektur.** Die Domain-Events aus dem Event Storming beschreiben die
-  Fachlichkeit und legen die Reihenfolge der Anwendungsfälle fest. Eine technische Event-Infrastruktur
-  folgt daraus nicht, das LLM hatte dies gefolgert. Die Contexts kennen einander nur über IDs und
-  definierte Schnittstellen. Punkt 4 der Strategie in [3_Uebung.md](3_Uebung.md) ist entsprechend angepasst.
-- **Paketstruktur nur exemplarisch.** Unsere Paketstruktur zu Übung 3 war nur exemplarisch und sollte
-  keine feste Vorgabe darstellen. Das LLM hat hier einen Punkt aufgebracht, der nicht relevant war.
-- **In-Memory-Repository** wird in Form einer H2-In-Memory-DB dargestellt und es werden nicht extra
-  In-Memory-Datenstrukturen erstellt. Das würde die Testimplementierung verkomplizieren.
-- **Teststrategie klargestellt (a2).** Den Widerspruch in Punkt 5 („nur die Domain-Logik … somit nur
-  die Adapter“) hat das LLM zu Recht gefunden. Gemeint war die Trennung, die wir in Aufgabe 2 schon
-  umsetzen: Domänentests laufen ohne Framework und ohne Datenbank. Integrationstests schreiben wir nur
-  bei Bedarf und dann mit einer In-Memory-Datenbank und mit Helidons `@ServerTest` für HTTP.
-- **Domain-Events und Reihenfolge (b, c).** Die wichtigsten Domain-Events sind `AbstimmungErstellt`
-  und `StimmeAbgegeben`, dazu `AbstimmungBeendet`. Die Umsetzung erfolgt als Durchstich pro Event in
-  dieser Reihenfolge, beginnend mit `AbstimmungErstellt`. Die Kontoverwaltung kommt zuletzt, weil die
-  VA ein fester Superuser ist und die Tests aus Aufgabe 2 als Ersteller nur eine `NutzerId` brauchen.
-
 <!-- Domain-Events (mind. 2), angepasste Entwicklungsstrategie, übernommene/abgelehnte LLM-Vorschläge (ca. 5–6 Sätze) -->
 
 ## 2. Testfälle mit LLM generieren und validieren (TDD Schritt 1)
@@ -91,12 +19,12 @@ JUnit-5-Testklassen, aber keine Implementierung.
 
 **Testsuite** (`src/test/java/de/mse/votee_backend/abstimmungsverwaltung/`):
 
-| Testklasse                                   | Inhalt                                                  | Testaufrufe |
-| -------------------------------------------- | ------------------------------------------------------- | ----------- |
-| `domain/model/AbstimmungTest`                | Happy Path, Grenzfälle, Negativtests je Regel, Annahmen | 31          |
-| `domain/model/AbstimmungszeitraumTest`       | Ende nach Beginn, fehlende Werte                        | 3           |
-| `domain/model/NutzerIdTest`                  | Wert gesetzt / leer                                     | 4           |
-| `application/AbstimmungEingabeValidatorTest` | Titel- und Datumsformat                                 | 90          |
+| Testklasse | Inhalt | Testaufrufe |
+|---|---|---|
+| `domain/model/AbstimmungTest` | Happy Path, Grenzfälle, Negativtests je Regel, Annahmen | 31 |
+| `domain/model/AbstimmungszeitraumTest` | Ende nach Beginn, fehlende Werte | 3 |
+| `domain/model/NutzerIdTest` | Wert gesetzt / leer | 4 |
+| `application/AbstimmungEingabeValidatorTest` | Titel- und Datumsformat | 90 |
 
 **Regex:**
 
@@ -114,12 +42,12 @@ hilfreich war der Test mit nachgestelltem Zeilenumbruch, der einen echten Fehler
 mit `find()` statt `matches()` geprüft wird. Die Aussage des LLM, alle 120 Tests seien grün, war nicht
 nachprüfbar, weil es eine eigene, nicht gelieferte Implementierung und einen JUnit-Ersatz verwendet hatte;
 wir haben die Tests deshalb selbst mit JUnit 5 ausgeführt. Angepasst haben wir die Paketnamen an unsere
-Struktur, den Getter-Stil (`getTitel()` wie in der Musterlösung zu Übung 3) und die Lage des Validators
+Struktur, den Getter-Stil (`getTitel()` wie in der Musterlösung der Dozentin zu Übung 3) und die Lage des Validators
 (`application`). Die vom LLM ohne Auftrag eingeführte Schnittstelle `domainEvents()` haben wir
 entfernt, bis die Domain Events aus Aufgabe 1 abgestimmt sind; redundante Tests wie `genauZweiOptionenSindErlaubt`
 (prüfte dasselbe wie der Happy Path mit Ja/Nein) haben wir gestrichen und
 Tests für `NutzerId` und `Abstimmungszeitraum` in eigene Klassen verschoben. Ergänzt haben wir Tests zu drei
-Lücken, die das LLM übersehen hat: Umlaute in zerlegter Unicode-Form wurden fälschlich
+Lücken, die das LLM übersehen hat: Umlaute in zerlegter Unicode-Form (z. B. von macOS) wurden fälschlich
 abgelehnt, ein Titel wie `"A  "` erreichte die Mindestlänge nur durch Leerzeichen, und das Jahr 0000 war
 gültig. Außerdem haben wir die Titelregel gelockert, weil realistische Titel wie „Café Central“ oder
 „Titel (neu)“ abgelehnt wurden.
@@ -127,7 +55,7 @@ gültig. Außerdem haben wir die Titelregel gelockert, weil realistische Titel w
 Prompt und vollständige LLM-Antwort (inkl. ursprünglicher Regex und Testliste) stehen in
 [4_2_LLM_Prompt_und_Antwort.md](4_2_LLM_Prompt_und_Antwort.md).
 
-**Offen bis 4.3 bereit ist:** Darf der Beginn in der Vergangenheit liegen? Sollen Titel getrimmt gespeichert
+**Offen (mit 4.3 klären):** Darf der Beginn in der Vergangenheit liegen? Sollen Titel getrimmt gespeichert
 werden? Braucht die Domäne selbst eine Längenregel für den Titel?
 
 **Hinweis TDD:** Die Tests kompilieren erst, wenn die Klassen aus Aufgabe 3 existieren („rot“).
@@ -137,63 +65,9 @@ Für `@ParameterizedTest` wurde `junit-jupiter-params` in der `pom.xml` ergänzt
 
 <!-- Pair-Programming-Prozess mit dem LLM (ca. 10–12 Sätze) -->
 
-Bearbeitung: Ronny (Implementierung), Hassan (Doku)
-
-**LLM-Einsatz:** ChatGPT 5.6 Sol, 17.11.2026, Branch `abgabe_04_implementation`. Interaktionen 1–8
-stehen im Interaktionslog ([../llm_log/interaktionslog.md](../llm_log/interaktionslog.md)), das
-LLM-Code-Review in [DDD_Review.md](DDD_Review.md). Der letzte Schritt (Value Object `Titel`) ist dort noch
-nicht protokolliert.
-
-**Pair-Programming-Prozess:**
-Wir haben dem LLM unsere Testsuite aus Aufgabe 2 gegeben und es gebeten, eine Implementierung zu erstellen,
-die die Tests erfüllt, und dabei eine Funktion nach der anderen anzugehen. Das LLM ging von innen nach
-außen vor (`NutzerId`, `Abstimmungszeitraum`, `AbstimmOption`, dann die Aggregate Root `Abstimmung` mit
-Factory-Methode und zuletzt der `AbstimmungEingabeValidator`) und führte nach jedem Schritt die passende
-Testklasse aus, sodass jeder Schritt einzeln nachvollziehbar blieb. Hilfreich war es auch bei der
-Fehlersuche, als `mvn test` lokal scheiterte: Fedora erzwingt über `/etc/java/maven.conf` Java 25, während
-der Maven-Wrapper `./mvnw` das aktive Java 27 nutzt. Anschließend ließen wir das LLM den Code auf
-DDD-Prinzipien reviewen; es fand vier Lücken: keine Identität der Abstimmung, ein anämisches Modell ohne
-fachliches Verhalten, kein Domain Event und eine Titelregel nur im Validator der Application-Schicht.
-Daraufhin haben wir testgetrieben `AbstimmungId` (Record, Factory `neu()` mit UUID, ID-basiertes
-`equals`/`hashCode`) und fachliche Methoden wie `istLaufend` und `kannErgebnisEingesehenWerden` ergänzt und
-die Titelregel in ein Value Object `Titel` verschoben, an das der Validator nun delegiert. Gut eingesetzt
-hat das LLM Records mit kompaktem Konstruktor zur Selbstvalidierung und `List.copyOf` für eine
-unveränderliche Optionsliste. Streams, Lambdas, Optional und Generics hat es dagegen nicht verwendet:
-Duplikatprüfung und `hatOption` sind klassische Schleifen, wo `anyMatch` lesbarer wäre. Für Wartbarkeit
-und Lesbarkeit kritisch sind außerdem zwei überladene `erstelle`-Methoden (mit `String` und mit `Titel`)
-und ein englischer Alias `Title` neben `Titel`, der unserer Ubiquitous Language widerspricht und keinen
-Mehrwert hat. Korrigieren mussten wir auch, dass das Review nach dem letzten Refactoring die Titelregel
-noch als offen führte; Aussagen des LLM zum eigenen Stand haben wir deshalb gegen den Code geprüft. Die
-vom LLM gemeldeten Testergebnisse (zuletzt 149 grüne Tests vor dem `Titel`-Schritt) haben wir lokal mit
-`./mvnw test` (Java 27) nachvollzogen: Nach dem `Titel`-Schritt laufen alle 173 Tests grün, darunter 24 neue
-Tests für `Titel`. Offen für Aufgabe 4 bleiben das Domain
-Event `AbstimmungErstellt` (die im 4.2-Testentwurf vorgeschlagene Methode `domainEvents()` hatten wir
-bewusst entfernt), das `AbstimmungRepository` und fachliche Exceptions statt `IllegalArgumentException`.
-
 ## 4. Test-Erweiterung und Refaktorisierung (TDD Schritt 3)
 
 <!-- Umgesetzte und abgelehnte Refactoring-Vorschläge (ca. 5–6 Sätze) -->
-
-Bearbeitung: Hassan
-
-**LLM-Einsatz:** Claude (Opus 5.5), 17.11.2026, Branch `abgabe_04_refactoring`. Prompt, Antwort und unsere
-Bewertung jedes Vorschlags stehen in [4_4_LLM_Prompt_und_Antwort.md](4_4_LLM_Prompt_und_Antwort.md); jeder
-Arbeitsschritt ist ein eigener Commit (Test und Code eines Schritts gemeinsam, die rote Phase wurde vor dem
-Commit lokal geprüft).
-
-Das LLM fand mit Optionen in zerlegter Unicode-Form (z. B. „Grün“ von macOS) einen echten Fehler: Sie wurden
-nicht als Duplikat erkannt; wir haben das zuerst mit einem roten Test belegt und dann die Vergleichsregel in
-`AbstimmOption.normalisierterText()` gebündelt, statt sie doppelt in `Abstimmung` zu pflegen. Außerdem haben
-wir den überflüssigen Alias `Title` gelöscht, die Optionsprüfung aus der langen Factory-Methode extrahiert,
-unerreichbare Prüfungen entfernt, `hatOption` auf `stream().anyMatch()` und `equals` auf Pattern Matching
-umgestellt, die Titellänge nur noch an einer Stelle geprüft und eine fachliche
-`AbstimmungsregelVerletztException` eingeführt, die von `IllegalArgumentException` erbt, sodass alle Tests
-aus 4.2 unverändert grün bleiben. Nicht sinnvoll waren ein Stream für die Duplikatprüfung (die Schleife bricht
-früher ab und nennt das Duplikat), `Optional` für die Beschreibung (widerspricht der in 4.2 festgelegten Regel
-„leer = keine Beschreibung“) und ein Cache für `hatOption`, weil Abstimmungen nur wenige Optionen haben und
-das vorzeitige Optimierung wäre. Zwei vom LLM als fehlend gemeldete Edge-Cases (Zeitpunkt genau am
-Fristende, `null` als Zeitpunkt) waren bereits getestet; das LLM hatte vorhandene Tests übersehen, weshalb
-wir jede Behauptung gegen den Code geprüft haben. Nach allen Schritten laufen 190 Tests grün (vorher 173).
 
 ## 5. Modularität und Testbarkeit via CI/CD
 
@@ -202,43 +76,3 @@ wir jede Behauptung gegen den Code geprüft haben. Nach allen Schritten laufen 1
 ## 6. Kritische Reflexion zu TDD, DDD und LLM-gestützter Entwicklung
 
 <!-- Chancen und Risiken (ca. 10–15 Sätze) -->
-
-### Erfahrungsbericht Ronny (aus Aufgabe 3 hierher verschoben)
-
-Vorweg möchte ich mitteilen, dass ich auf Arbeit auch bereits genötigt werde, mit
-LLM-Systemen zur Software-Entwicklung zu arbeiten. Das ist der Grund, warum ich
-nach 15 leidenschaftlichen Jahren als Software-Entwickler, Bewerbungen schreibe,
-um diesen Job aufzugeben und nur noch in meiner Freizeit Software für mich zu
-entwickeln.
-
-**zu meinem Erlebnis bei dieser Aufgabe:** Ich nutze ein kostenloses Kontingent,
-da ich nicht bereit bin, Geld für LLM-Tools auszugeben. Das geht
-selbstverständlich mit Einschränkungen einher. Ich werde regelmäßig darauf
-hingewiesen, dass die Last auf den Servern gerade zu hoch sei und ich es in
-wenigen Minuten erneut versuchen soll. Das ist frustrierend. Grundsätzlich eine
-erste Implementation zu generieren, welche die Tests erfüllt hat dennoch relativ
-Problemlos funktioniert. Der Quellcode war gut lesbar und verständlich. Das
-einzige, was schwer zu verstehen ist, ist einer der regulären Ausdrücke für die
-Input-Validierung. Das ist allerdings auch allgemein nicht unüblich bei
-regulären ausdrücken, wenn man diese zu einem späteren Zeitpunkt sich erneut
-ansehen möchte. Dieses inhärente Problem von regulären Ausdrücken kann nicht
-seriös LLM's angelastet werden.
-
-Ein Review mit diesen LLM-Tools funktioniert meiner Erfahrung unzuverlässig gut.
-Oft werden Probleme gefunden, die man als Mensch schnell übersehen kann.
-Allerdings werden auch Probleme gefunden, die nicht real sind. Beim beheben
-kommt es gelegentlich durchaus vor, dass andere Teile "beschädigt" werden und
-Fehler eingebaut werden. Grundsätzlich funktionieren Reviews oft in einer
-neuen Session besser. In diesem noch sehr kleinen Projekt hat das Review gut
-funktioniert. Die Prinzipien von DDD wurden mit überprüft und sinnvolle
-Anmerkungen für die Korrektheit und die Einhaltung von DDD wurden zurück
-gegeben, mit denen nach und nach in Dialog-Form die Probleme behoben werden
-konnten. Grundsätzlich sollte man, wenn man mit LLM's Code generiert immer
-mehrere LLM-Review-/Problembehebungsschleifen durchführen, da im Review oft
-festgestellt wird, dass der von der LLM generierte Code noch Fehler enthält oder
-Refaktoriert werden sollte. Menschliches Review wird auch immer empfohlen, wird
-allerdings mit zunehmender Code Menge, die generiert wird, immer schwieriger.
-
-Mein Kostenloses Kontingent an Tokens war relativ schnell erreicht. Ich konnte
-nicht einmal die Aufgabe 4.3 vollständig bearbeiten, sodass ein Team-Kollege
-übernehmen musste.
