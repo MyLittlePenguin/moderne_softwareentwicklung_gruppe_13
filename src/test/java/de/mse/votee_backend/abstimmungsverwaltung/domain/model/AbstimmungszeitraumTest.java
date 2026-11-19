@@ -3,6 +3,7 @@ package de.mse.votee_backend.abstimmungsverwaltung.domain.model;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -71,5 +72,20 @@ class AbstimmungszeitraumTest {
         assertFalse(zeitraum.istInZukunft(BEGINN));
         assertFalse(zeitraum.istInZukunft(ENDE));
         assertThrows(IllegalArgumentException.class, () -> zeitraum.istInZukunft(null));
+    }
+
+    @Test
+    @DisplayName("Fachregel: Beginn darf bei Erstellung nicht in der Vergangenheit liegen")
+    void pruefeBeginnNichtInVergangenheit() {
+        Abstimmungszeitraum zeitraum = new Abstimmungszeitraum(BEGINN, ENDE);
+
+        assertDoesNotThrow(() -> zeitraum.pruefeBeginnNichtInVergangenheit(BEGINN.minusMinutes(1)));
+        assertDoesNotThrow(() -> zeitraum.pruefeBeginnNichtInVergangenheit(BEGINN));
+        assertThrows(AbstimmungsregelVerletztException.class,
+                () -> zeitraum.pruefeBeginnNichtInVergangenheit(BEGINN.plusSeconds(1)));
+        assertThrows(AbstimmungsregelVerletztException.class,
+                () -> zeitraum.pruefeBeginnNichtInVergangenheit(BEGINN.plusMinutes(1)));
+        assertThrowsExactly(IllegalArgumentException.class,
+                () -> zeitraum.pruefeBeginnNichtInVergangenheit(null));
     }
 }

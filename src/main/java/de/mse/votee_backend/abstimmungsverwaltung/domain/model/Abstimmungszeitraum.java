@@ -58,4 +58,21 @@ public record Abstimmungszeitraum(LocalDateTime beginn, LocalDateTime ende) {
         }
         return zeitpunkt.isBefore(beginn);
     }
+
+    /**
+     * Prüft die Fachregel für neu erstellte Abstimmungen: Der Beginn darf nicht in der Vergangenheit liegen.
+     *
+     * @param jetzt der aktuelle Referenzzeitpunkt
+     * @throws IllegalArgumentException           falls {@code jetzt} null ist
+     * @throws AbstimmungsregelVerletztException  falls der Beginn vor {@code jetzt} liegt
+     */
+    public void pruefeBeginnNichtInVergangenheit(LocalDateTime jetzt) {
+        if (jetzt == null) {
+            throw new IllegalArgumentException("Referenzzeitpunkt darf nicht null sein.");
+        }
+        if (beginn.isBefore(jetzt)) {
+            throw new AbstimmungsregelVerletztException(
+                    "Der Beginn der Abstimmung darf nicht in der Vergangenheit liegen.");
+        }
+    }
 }

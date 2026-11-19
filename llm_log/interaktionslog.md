@@ -292,3 +292,138 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
    - `./mvnw test`: 149/149 Tests bestanden (0 Fehler, 0 Failures).
    - `./mvnw checkstyle:check`: 0 Violations.
    - [doc/DDD_Review.md](../doc/DDD_Review.md) aktualisiert.
+
+---
+
+## Interaktion 9
+
+### Benutzeranfrage
+> bitte schreibe das llm_log weiter bei allen anfragen und antworten
+
+### Antwort
+- Bestätigt: Alle weiteren Anfragen und Antworten werden fortlaufend im bestehenden Format in `llm_log/interaktionslog.md` protokolliert (beginnend mit Interaktion 9).
+
+---
+
+## Interaktion 10
+
+### Benutzeranfrage
+> was muss im backend noch implementiert werden, um abstimmungen zu erstellen. die abstimmungen sollen nur von administrator:innen erstellt werden können. erstelle einen plan.
+
+### Analyse des Ist-Stands & Implementierungsplan
+1. **Bereits vorhanden:**
+   - Domänenmodell (`abstimmungsverwaltung.domain.model`): `Abstimmung`, `AbstimmungId`, `NutzerId`, `Titel`, `Abstimmungszeitraum`, `AbstimmOption`, `AbstimmungsregelVerletztException`.
+   - Eingabevalidierung (`abstimmungsverwaltung.application`): `AbstimmungEingabeValidator` (Titel-Delegation & Datumsprüfung `dd.MM.yyyy HH:mm`).
+   - Web- & DB-Basis: Helidon SE (`Main`, `PageService`, `Templates`), H2- und Helidon-DbClient-Dependencies in `pom.xml` sowie `db`-Konfiguration in `application.yaml` (noch ungenutzt).
+
+2. **Noch fehlende Bausteine für das Erstellen von Abstimmungen (nur für Administrator:innen):**
+   - **Persistenz-Port & H2-Adapter:** `AbstimmungRepository`-Interface (`speichere`, `findeNachId`, `findeAlle`), DB-Schema (`abstimmungen` & `abstimm_optionen` mit Reihenfolge-Spalte `position`), `H2AbstimmungRepository` mit Helidon `DbClient` (transaktionales Speichern).
+   - **Autorisierung & Authentifizierung (Admin / Verwaltungsangestellte):**
+     - Port zur Rollenprüfung (z. B. `BerechtigungsPruefung` / `istAdministrator(NutzerId)`) zur losen Kopplung zwischen `abstimmungsverwaltung` und `kontoverwaltung`.
+     - Fachliche Exception `KeineBerechtigungException` (HTTP `403`).
+     - Schlanke Kontoverwaltung / Auth-Adapter: Benutzer-/Admin-Modell (`Rolle`: `ADMIN`, `BUERGER`) bzw. konfigurierbarer Admin-Account mit sicherem Passwort-Hashing (z. B. PBKDF2) sowie Authentifizierungsmechanismus (HTTP-Login mit HttpOnly-Session-Cookie oder HTTP Basic Auth) inkl. serverseitiger Ableitung der `NutzerId` (nicht aus Client-Eingaben).
+   - **Anwendungsservice (`abstimmungsverwaltung.application`):**
+     - `AbstimmungService` mit `erstelleAbstimmung(...)` (prüft Admin-Berechtigung, wandelt Eingaben in Domänenobjekte um, ruft `Abstimmung.erstelle(...)` auf, speichert über `AbstimmungRepository`) sowie Lese-Methoden (`findeAlle`, `findeNachId`).
+     - Ergänzung einer Parsing-Methode für Datumsstrings in `AbstimmungEingabeValidator`.
+   - **Web-Adapter (Helidon SE Routing & Templates/API):**
+     - Login-/Logout-Endpunkte bzw. Authentifizierungs-Prüfung.
+     - Endpunkte zum Erstellen (`GET /abstimmungen/neu` für Formular, `POST /abstimmungen` für Erstellung – geschützt auf Rolle Admin) mit korrekten Statuscodes (`401`/`302`, `403`, `400`, `303`/`201`) und CSRF-Schutz bei Cookie-Sessions.
+     - Anbindung von `GET /` (und optional `GET /abstimmungen/{id}`) an echte Daten aus dem `AbstimmungRepository`.
+   - **Composition Root (`Main.java`) & Testkonfiguration:**
+     - Verdrahtung von `DbClient`, Schema-Initialisierung, Repositories, Auth-Service, `AbstimmungService` und HTTP-Services per Konstruktor-Injektion; getrennte H2-In-Memory-Konfiguration für Tests.
+
+3. **Schrittweiser TDD-Umsetzungsplan:**
+   - **Phase 1:** Ports & Exceptions (`AbstimmungRepository`, `BerechtigungsPruefung`, `KeineBerechtigungException`).
+   - **Phase 2:** Persistenz-Adapter (`schema.sql`, `H2AbstimmungRepository` + Integrationstests mit H2 In-Memory).
+   - **Phase 3:** Anwendungsservice (`AbstimmungService` + Parsing-Hilfsmethode + Unit-/Integrationstests für Admin, Nicht-Admin und ungültige Eingaben).
+   - **Phase 4:** Authentifizierung & Rollenverwaltung (schlanker `kontoverwaltung`-Context / Admin-Bootstrap + Login/Session oder Basic Auth + Tests).
+   - **Phase 5:** HTTP-Adapter, Templates/API & Wiring in `Main.java` + `@ServerTest`-Integrationstests (unangemeldet `401`/Redirect, Bürger:in `403`, Admin `303`/`201`, ungültig `400`).
+
+4. **Offene Klärungspunkte an den Benutzer:**
+   - Schnittstellenart: Thymeleaf-HTML-Formulare, JSON-REST-API oder beides?
+   - Auth-Variante für den ersten Durchstich: Login + Session-Cookie vs. HTTP Basic Auth?
+   - Admin-Datenquelle: Fester konfigurierbarer Admin-Account (gemäß `doc/4_Uebung.md`) oder bereits eine `nutzer`-Tabelle in H2?
+   - Fachregel: Darf der `beginn` einer neuen Abstimmung in der Vergangenheit liegen?
+
+---
+
+## Interaktion 11
+
+### Benutzeranfrage
+> die ui soll über thymeleaf und htmx umgesetzt werden. für die authentifizierung soll eine 2fa später umgesetzt werden. dafür sollen generierte code listen als zweiter faktor dienen. für den anfang kann als code erstmal 00000 akzeptiert werden. die generierung und tatsächliche prüfung kann später umgesetzt werden. der begin einer neuen fachregel darf nie in der vergangenheit liegen. welche vorteile hätte http basic auf für eine anfängliche implementation?
+
+### Antwort & Abwägung
+1. **Vorteile von HTTP Basic Auth für den ersten Durchstich:**
+   - **Stateless / kein Session-Management:** Kein `SessionStore`, keine Cookie-Verwaltung (`HttpOnly`, `SameSite`, Ablaufzeiten).
+   - **Sehr geringer Startaufwand:** Ein kleiner HTTP-Handler/Filter liest den `Authorization: Basic ...`-Header und prüft Benutzername/Passwort; noch kein Login-/Logout-Template nötig.
+   - **Einfaches Testen:** In Helidon `@ServerTest` oder per `curl -u` reicht ein einzelner Request-Header statt Login + Cookie-Handling.
+   - **Out-of-the-box im Browser:** Browser zeigt bei `401` + `WWW-Authenticate` automatisch ein Login-Fenster an und sendet den Header bei HTMX-Requests derselben Origin mit.
+
+2. **Nachteile im Kontext von Thymeleaf + HTMX + 2FA (Code-Liste / `00000`):**
+   - **Kein Platz für den 2. Faktor:** Basic Auth kennt nur Benutzername + Passwort; ein 2FA-Code (`00000` / später Code-Liste) ließe sich nur über unsaubere Workarounds unterbringen und müsste später komplett umgebaut werden.
+   - **Kein sauberer Logout & eingeschränkte UX:** Browser cachen Basic-Auth-Daten bis zum Schließen; eigene HTMX-Fehlermeldungen im Login-UI sind nicht möglich.
+
+3. **Empfehlung & Anpassung des Plans:**
+   - **Auth-Empfehlung:** Da 2FA (`00000` → Code-Liste) und Thymeleaf + HTMX bereits feststehen, ist ein **schlankes Login-Formular + In-Memory-Session-Cookie (`HttpOnly`, `SameSite=Lax`)** kaum aufwändiger als Basic Auth, bildet aber den 2FA-Port (`ZweiFaktorPruefung`, anfangs fester Code `"00000"`) und Logout sofort sauber ab. Alternativ kann Basic Auth nur dann sinnvoll sein, wenn erst reine Backend-Routen ohne Login-UI gebaut werden sollen (bei sauberer Trennung hinter Ports bleibt der spätere Tausch isoliert auf die HTTP-Schicht).
+   - **Auswirkungen auf den Plan:**
+     - **Thymeleaf + HTMX:** HTML-Formulare und HTMX-Fragmente für Validierungsfehler / `HX-Redirect` nach Erstellung.
+     - **2FA-Port:** Interface `ZweiFaktorPruefung` (Implementierung 1: akzeptiert `"00000"`, später austauschbar gegen Code-Listen-Adapter in H2).
+     - **Fachregel „Beginn nicht in der Vergangenheit“:** Prüfung beim Erstellen über injizierte `Clock` (deterministische Tests bleiben stabil, und das Laden älterer Abstimmungen aus H2 bleibt möglich).
+
+---
+
+## Interaktion 12
+
+### Benutzeranfrage
+> passe den plan an. berücksichtige für die implementation auch, dass htmx 4 genutzt werden soll
+
+### Angepasster Implementierungsplan (Thymeleaf + htmx 4 + 2FA-Vorbereitung + Vergangenheitsregel)
+1. **Architektur-Besonderheiten für htmx 4 im Backend & in Templates:**
+   - **Error-Swapping:** htmx 4 swappt standardmäßig alle HTTP-Antworten außer `204` und `304` (inkl. `4xx`/`5xx`). Validierungsfehler beim Erstellen können daher semantisch sauber mit `422 Unprocessable Entity` und dem neu gerenderten HTML-Formular-Fragment zurückgegeben werden; optional gezieltes Routing per `hx-status:422` / `hx-status:403`.
+   - **Explizite Attribut-Vererbung:** Attribute (z. B. `hx-headers` für CSRF-Token oder `hx-target`) vererben sich in htmx 4 nur mit dem Modifier `:inherited` (z. B. `hx-headers:inherited`).
+   - **`Vary: HX-Request` & kein History-Cache:** Da htmx 4 keinen lokalen History-Cache mehr nutzt (Zurück-Button löst echtes `GET` aus), liefern `GET`-Routen ohne `HX-Request: true` immer die vollständige Seite und setzen `Vary: HX-Request`.
+   - **Multi-Target-Updates & Redirects:** Unterstützung für `<hx-partial>` (Server-gesteuerte Teilaktualisierungen) sowie `HX-Redirect` (HTMX) / `303 See Other` (Fallback ohne JS) nach erfolgreicher Erstellung.
+   - **Attribute/Events:** Aktuelle htmx-4-Syntax verwenden (`hx-disable` statt `hx-disabled-elt`, `hx-ignore` statt altem `hx-disable`, Event-Syntax `htmx:phase:action` auf `fetch()`-Basis).
+   - **Thymeleaf-Erweiterung:** `Templates.java` um `renderFragment(template, fragment, variables)` erweitern; htmx 4 als statische Datei oder eingebundenes Skript bereitstellen.
+
+2. **Angepasster 5-Phasen-TDD-Plan:**
+   - **Phase 1 – Domäne, Ports & Exceptions:**
+     - Prüfmethode für „Beginn nicht in der Vergangenheit“ (mit explizitem `LocalDateTime jetzt`, sodass `AbstimmungTest` deterministisch bleibt und das Laden alter Abstimmungen aus der DB nicht fehlschlägt).
+     - `AbstimmungRepository` (`domain.repository`), `BerechtigungsPruefung` (Admin-Port) und `KeineBerechtigungException`.
+   - **Phase 2 – H2-Persistenz:**
+     - `schema.sql` (`abstimmungen`, `abstimm_optionen` mit `position`), `DatenbankInitialisierung`, transaktionales `H2AbstimmungRepository` + H2-In-Memory-Integrationstests.
+   - **Phase 3 – Anwendungsservice (`abstimmungsverwaltung.application`):**
+     - `AbstimmungService` mit injiziertem `AbstimmungRepository`, `BerechtigungsPruefung` und `Clock`: prüft Admin-Rolle → prüft `beginn >= jetzt` → baut `Abstimmung` → speichert.
+     - `parseDatum` in `AbstimmungEingabeValidator` (ggf. inkl. HTML-`datetime-local`-Unterstützung) + umfassende Unit-Tests.
+   - **Phase 4 – Kontoverwaltung, 2FA-Port (`00000`) & Session-Auth:**
+     - Schlanker Kontext `kontoverwaltung`: `Rolle` (`ADMIN`, `BUERGER`), Passwort-Hashing (`PBKDF2WithHmacSHA256`), konfigurierbarer Admin-Account + Adapter für `BerechtigungsPruefung`.
+     - Port `ZweiFaktorPruefung` (`pruefeCode(NutzerId, String)`) mit Start-Implementierung `FesterCodeZweiFaktorPruefung` (akzeptiert `"00000"`), später austauschbar durch Code-Listen in H2.
+     - Serverseitiger `SessionStore` (`HttpOnly`, `SameSite=Lax`, `SecureRandom`-IDs) + CSRF-Token pro Session.
+   - **Phase 5 – Thymeleaf + htmx-4-HTTP-Adapter & Wiring (`Main.java`):**
+     - `Templates.renderFragment(...)`, Login-/Logout-Routen (`GET/POST /login`, `POST /logout`), Abstimmung-Routen (`GET /`, `GET /abstimmungen/neu`, `POST /abstimmungen`) mit `HX-Request`, `Vary: HX-Request`, `422` bei Validierungsfehlern, `401`/`HX-Redirect: /login` unangemeldet, `403` für Nicht-Admins, `HX-Redirect` / `303` bei Erfolg, dynamische Optionsfelder via htmx 4.
+     - Verdrahtung in `Main.setup(...)` + `@ServerTest`-Integrationstests (inkl. HTMX-Header-Tests).
+
+---
+
+## Interaktion 13
+
+### Benutzeranfrage
+> passe den plan noch so an, dass der einmalcode immer exakt 5 stellen haben soll. dann beginne mit phase 1
+
+### Plan-Anpassung (Phase 4)
+- **Einmalcode (2FA):** Neues Value Object `EinmalCode` im Bounded Context `kontoverwaltung`, das strikt genau 5 Ziffern (`^\d{5}$`) erzwingt. Der Start-Stub `FesterCodeZweiFaktorPruefung` prüft gegen `new EinmalCode("00000")`; spätere Code-Listen erzeugen und prüfen ebenfalls `EinmalCode`-Instanzen. Im Login-Formular entsprechend `inputmode="numeric"`, `pattern="\d{5}"`, `minlength="5"`, `maxlength="5"`.
+
+### Umsetzung Phase 1 (TDD: Domänenregel, Ports & Exceptions)
+1. **Rote Phase (Tests zuerst):**
+   - [AbstimmungszeitraumTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/domain/model/AbstimmungszeitraumTest.java): Test `pruefeBeginnNichtInVergangenheit()` ergänzt (Zukunft und exakt `jetzt` erlaubt; `1 Sekunde`/`1 Minute` in Vergangenheit wirft `AbstimmungsregelVerletztException`; `null` wirft exakt `IllegalArgumentException`).
+   - [KeineBerechtigungExceptionTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/application/KeineBerechtigungExceptionTest.java): Test für Meldungsübernahme und klare Trennung von `IllegalArgumentException` erstellt.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop test` lief erwartungsgemäß rot (Kompilierfehler vor Implementierung).
+
+2. **Grüne Phase (Implementierung):**
+   - [Abstimmungszeitraum.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/domain/model/Abstimmungszeitraum.java): Methode `pruefeBeginnNichtInVergangenheit(LocalDateTime jetzt)` ergänzt.
+   - [AbstimmungRepository.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/domain/repository/AbstimmungRepository.java): Repository-Port mit `speichere`, `findeNachId`, `findeAlle` angelegt.
+   - [BerechtigungsPruefung.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/application/BerechtigungsPruefung.java): Rollenprüfungs-Port `istAdministrator(NutzerId)` angelegt.
+   - [KeineBerechtigungException.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/application/KeineBerechtigungException.java): Fachliche Exception für fehlende Admin-Berechtigung angelegt.
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **192/192 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
