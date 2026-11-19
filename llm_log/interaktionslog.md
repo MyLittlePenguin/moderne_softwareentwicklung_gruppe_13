@@ -454,3 +454,29 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **199/199 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+---
+
+## Interaktion 15
+
+### Benutzeranfrage
+> ja
+
+### Umsetzung Phase 3 (TDD: Anwendungsservice & Datumsparser)
+1. **Rote Phase (Tests zuerst):**
+   - [AbstimmungEingabeValidatorTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/application/AbstimmungEingabeValidatorTest.java): Neue Testgruppe `@Nested class ParseDatum` (8 Testausführungen für gültige Daten inkl. Schaltjahr sowie ungültige Formate/Daten).
+   - [AbstimmungServiceTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/application/AbstimmungServiceTest.java): 11 Tests gegen H2-In-Memory-DB (`H2AbstimmungRepository`, gemäß `doc/4_Uebung.md`) und fixer `Clock`:
+     - Admin erstellt gültige Abstimmung (inkl. Grenzfall `beginn == jetzt`) → gespeichert & per `findeNachId`/`findeAlle` ladbar.
+     - Nicht-Admin (`BUERGER`) und `null`-Akteur → `KeineBerechtigungException`, nichts gespeichert.
+     - Autorisierung wird vor der Eingabevalidierung geprüft.
+     - Beginn in der Vergangenheit, ungültiger Titel, ungültige Optionen (`null`, zu wenige, leer, Duplikat) → `AbstimmungsregelVerletztException`, nichts gespeichert.
+     - Deterministisches Verhalten der injizierten `Clock` bei Zeitverschiebung.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop test` lief erwartungsgemäß rot.
+
+2. **Grüne Phase (Implementierung):**
+   - [AbstimmungEingabeValidator.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/application/AbstimmungEingabeValidator.java): `parseDatum(String)` ergänzt; `istGueltigesDatum(String)` delegiert nun ohne Duplizierung an `parseDatum`.
+   - [ErstelleAbstimmungBefehl.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/application/ErstelleAbstimmungBefehl.java): Unveränderlicher Command-Record für die Anwendungsfall-Eingaben.
+   - [AbstimmungService.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/application/AbstimmungService.java): Anwendungsservice mit Konstruktor-Injektion (`AbstimmungRepository`, `BerechtigungsPruefung`, `Clock`), `erstelleAbstimmung(...)`, `findeAlle()` und `findeNachId(...)`.
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **218/218 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.

@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.regex.Pattern;
 
+import de.mse.votee_backend.abstimmungsverwaltung.domain.model.AbstimmungsregelVerletztException;
 import de.mse.votee_backend.abstimmungsverwaltung.domain.model.Titel;
 
 /**
@@ -45,15 +46,31 @@ public class AbstimmungEingabeValidator {
      * @return true, falls gültig, sonst false
      */
     public boolean istGueltigesDatum(String datum) {
-        if (datum == null || !DATUM_PATTERN.matcher(datum).matches()) {
+        try {
+            parseDatum(datum);
+            return true;
+        } catch (AbstimmungsregelVerletztException e) {
             return false;
+        }
+    }
+
+    /**
+     * Parst einen Datumsstring im Format {@code dd.MM.yyyy HH:mm} (Jahre 2000–2099) mit strikter Kalenderprüfung.
+     *
+     * @param datum der zu parsende Datumsstring
+     * @return der geparste Zeitpunkt
+     * @throws AbstimmungsregelVerletztException falls Format oder Kalenderdatum ungültig sind
+     */
+    public LocalDateTime parseDatum(String datum) {
+        if (datum == null || !DATUM_PATTERN.matcher(datum).matches()) {
+            throw new AbstimmungsregelVerletztException(
+                    "Ungültiges Datumsformat. Erwartet wird dd.MM.yyyy HH:mm (Jahre 2000–2099).");
         }
 
         try {
-            LocalDateTime.parse(datum, DATUM_FORMATTER);
-            return true;
+            return LocalDateTime.parse(datum, DATUM_FORMATTER);
         } catch (DateTimeParseException e) {
-            return false;
+            throw new AbstimmungsregelVerletztException("Ungültiges Kalenderdatum: " + datum);
         }
     }
 }
