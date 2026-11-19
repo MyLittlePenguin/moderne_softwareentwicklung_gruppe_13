@@ -480,3 +480,27 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **218/218 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+---
+
+## Interaktion 16
+
+### Benutzeranfrage
+> ja
+
+### Umsetzung Phase 4 (TDD: Kontoverwaltung, 5-stelliger 2FA-Einmalcode & Session-Store)
+1. **Rote Phase (Tests zuerst):**
+   - [EinmalCodeTest.java](../src/test/java/de/mse/votee_backend/kontoverwaltung/domain/model/EinmalCodeTest.java): 14 Testfälle für exakt 5 ASCII-Ziffern (u. a. Ablehnung von 4/6 Stellen, Buchstaben, Leerzeichen, nicht-ASCII-Ziffern).
+   - [Pbkdf2PasswortHasherTest.java](../src/test/java/de/mse/votee_backend/kontoverwaltung/infrastructure/Pbkdf2PasswortHasherTest.java): Gesalzene Hashes, Verifikation, sichere Ablehnung ungültiger Eingaben/Hashes.
+   - [FesterCodeZweiFaktorPruefungTest.java](../src/test/java/de/mse/votee_backend/kontoverwaltung/infrastructure/FesterCodeZweiFaktorPruefungTest.java): Akzeptiert exakt `00000`, lehnt andere 5-stellige Codes und `null` ab.
+   - [AuthentifizierungsServiceTest.java](../src/test/java/de/mse/votee_backend/kontoverwaltung/application/AuthentifizierungsServiceTest.java): Admin-/Bürger-Login mit Passwort + 5-stelligem Einmalcode, Ablehnung falscher Passwörter/Codes, sowie Prüfung von `KontoBerechtigungsAdapter` gegen `BerechtigungsPruefung`.
+   - [SessionStoreTest.java](../src/test/java/de/mse/votee_backend/kontoverwaltung/application/SessionStoreTest.java): Session-Erzeugung mit eindeutiger ID & CSRF-Token, Zeitablauf über injizierte `Clock`, Logout (`entferneSession`) und CSRF-Token-Prüfung.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop test` lief erwartungsgemäß rot.
+
+2. **Grüne Phase (Implementierung im Bounded Context `kontoverwaltung`):**
+   - **Domäne (`kontoverwaltung.domain.model`):** `EinmalCode` (`^[0-9]{5}$`), `Rolle` (`ADMIN`, `BUERGER`), `NutzerKonto`.
+   - **Anwendung (`kontoverwaltung.application`):** Ports `ZweiFaktorPruefung`, `PasswortHasher`, `NutzerKontoRepository`; Services `AuthentifizierungsService`, `Session`, `SessionStore` (mit `SecureRandom` und zeitkonstanter CSRF-Prüfung via `MessageDigest.isEqual`).
+   - **Infrastruktur (`kontoverwaltung.infrastructure`):** `Pbkdf2PasswortHasher` (`PBKDF2WithHmacSHA256`, 120.000 Iterationen, 16-Byte-Salt), `FesterCodeZweiFaktorPruefung` (`00000`-Stub), `KonfigurierteNutzerKonten`, sowie `KontoBerechtigungsAdapter` (Brücke zum Port `BerechtigungsPruefung` aus `abstimmungsverwaltung`).
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **244/244 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
