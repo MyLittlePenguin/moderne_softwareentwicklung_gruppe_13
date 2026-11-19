@@ -53,7 +53,7 @@ Prompt und vollständige Antwort: [5_1_LLM_Prompt_und_Antwort.md](5_1_LLM_Prompt
 
 | LLM-Vorschlag | Bewertung | Begründung |
 | --- | --- | --- |
-| Null-Prüfungen in `Abstimmungszeitraum` in `pruefeZeitpunkt()` zusammenführen | ✅ übernehmen (in Aufgabe 3) | echte Duplikation, geringes Risiko; dabei Exception-Typ vereinheitlichen (vom LLM übersehen) |
+| Null-Prüfungen in `Abstimmungszeitraum` in `pruefeZeitpunkt()` zusammenführen | ✅ sinnvoll (Maßnahme in Aufgabe 3) | echte Duplikation, geringes Risiko; dabei Exception-Typ vereinheitlichen (vom LLM übersehen) |
 | 6 Parameter in Record `AbstimmungErstellung` bündeln | ⏸ vorerst nicht | verschiebt die 6 Werte nur in ein anderes Objekt; lohnt erst bei mehr Aufrufstellen (sagt das LLM selbst) |
 | `pruefePflichtfelder()` aus `erstelle(...)` auslagern | ⏸ optional | CC sinkt nicht, es entsteht eine neue Methode mit 4 Parametern |
 | `hatOption(AbstimmOption)` ohne `map()` | ❌ nicht übernehmen | Vorschlag berechnet `normalisierterText()` des Suchbegriffs für jede Option neu, unser Code nur einmal |
@@ -127,9 +127,84 @@ aufgedeckt.
 
 ## 3. Technical Debt und Regelverletzungen mit LLM analysieren
 
-**Tool:**
+**Begriff (Skript S. 154–155):** *Technical Debt* fasst Regelverstöße, Fehler und zu hohe Komplexität als „Schuld“
+zusammen. Die „Zinsen“ sind der Mehraufwand, den jede spätere Änderung verursacht. Werkzeuge wie SonarQube rechnen diese
+Schuld in Arbeitszeit um.
 
-**LLM-Einsatz:**
+**Tools (19.11.2026, Stand `64fae10` auf `abgabe_05`):**
+
+- **SonarQube Community** (Regelwerk „Sonar way“) für Regelverletzungen und Code-Duplizierung
+- **PMD 7.29 mit CPD** (Copy-Paste-Detector) über `./mvnw pmd:pmd pmd:cpd`, eigenes Regelwerk `pmd-ruleset.xml`
+  (bestpractices, errorprone, design; Schwellen: Klassen-CC 30, Methoden-CC 10, max. 6 Parameter; CPD ab 30 Tokens)
+- **versions-maven-plugin 2.7** über `./mvnw versions:display-dependency-updates versions:display-plugin-updates`
+  für veraltete Abhängigkeiten
+
+### Ergebnisse
+
+| Bereich | Ergebnis |
+| --- | --- |
+| SonarQube Issues | vorher 1 (Reliability, High, 5 min: `assertNotEquals("…", a)` vergleicht verschiedene Typen), nachher **0**; der Fehler wurde schon in Aufgabe 2 behoben |
+| SonarQube Maintainability / Debt | 0 Issues, Quality Gate bestanden |
+| Code-Duplizierung | SonarQube **0,0 %** (0 Zeilen, 0 Blöcke), PMD-CPD **0** Duplikate |
+| PMD-Regelverletzungen | **8** Meldungen (s. u.) |
+| Direkt gepflegte Abhängigkeiten und Plugins | alle aktuell |
+| Genutzte, aber veraltete Abhängigkeiten | Helidon 27.0.1 → 27.0.2, H2 2.4.240 → 2.5.252, `hamcrest-all` 1.3 (2012, eingestellt) |
+
+Das versions-Plugin listet rund 450 Updates. Fast alle stammen aus der Stückliste (BOM) von Helidon und betreffen
+Bibliotheken, die wir nicht nutzen (z. B. Jackson, MongoDB, Testcontainers). Neuere Versionen von JUnit (6.2.0-M1) und
+SLF4J (2.1.0-alpha1) sind Vorabversionen und werden bewusst nicht übernommen.
+
+Die Komplexität von `Abstimmung` misst PMD mit 42, SonarQube mit 35. Beide Tools zählen Verzweigungen offenbar
+unterschiedlich (vermutlich `&&`, `||` und `? :`), was nicht im Detail geprüft wurde.
+
+### Technische Schuld nach Schweregrad
+
+Die Einstufung ist unsere fachliche Bewertung (nach Abgleich mit dem LLM, s. u.) und keine direkte Übernahme der
+PMD-Prioritäten (1 = kritisch bis 5 = gering).
+
+| Schweregrad | Befund | Quelle | Maßnahme |
+| --- | --- | --- | --- |
+| Hoch | – | | |
+| Mittel | `hamcrest-all` 1.3 seit 2012 nicht mehr gepflegt, genutzt in `MainTest` und `TemplatesTest` | versions | Artefakt gegen `org.hamcrest:hamcrest` 3.0 tauschen (Imports bleiben gleich) |
+| Mittel | Uneinheitlicher Exception-Vertrag in `Abstimmungszeitraum`: Konstruktor wirft `AbstimmungsregelVerletztException`, drei Methoden `IllegalArgumentException`, dazu dreifach identische Null-Prüfung | eigene Analyse (Aufgabe 1) | Regel festlegen und per Javadoc dokumentieren (Fachregel → eigene Exception, `null`-Argument → `IllegalArgumentException`), Null-Prüfung in eine Methode zusammenführen |
+| Mittel | Zwei `erstelle`-Überladungen (`Titel`/`String`) und zwei Getter `getTitel()`/`getTitelObjekt()` | eigene Analyse, PMD (6 Parameter) | `Titel`-Variante als bevorzugte API festlegen; Umbau erst bei der nächsten API-Überarbeitung |
+| Niedrig | Helidon 27.0.1 statt 27.0.2 (Patch-Release) | versions | Parent-Version anheben, danach `./mvnw clean verify` und Server-Start prüfen |
+| Niedrig | `System.out.println` in `Main` (PMD Priorität 2) | PMD | `System.Logger` des JDK verwenden |
+| Niedrig | Fehlende `serialVersionUID` in `AbstimmungsregelVerletztException` | PMD | Konstante ergänzen |
+| Niedrig | Exception als Kontrollfluss in `AbstimmungEingabeValidator.istGueltigerTitel` mit breitem `catch (IllegalArgumentException)` | eigene Analyse | auf `AbstimmungsregelVerletztException` einengen; `Titel` wirft an allen 4 Stellen nur diese |
+| Niedrig | `maven-site-plugin` ohne Version, keine Mindest-Maven-Version | versions | Version festlegen; Enforcer nicht nötig, da Maven Wrapper (Maven 3.10.0) und CI (Java 27) die Umgebung schon festlegen |
+| Niedrig | H2 2.4.240 statt 2.5.252 | versions | beim Bau des In-Memory-Repositorys mit aktualisieren |
+| Kein Handlungsbedarf | CC 10 in `erstelle` und `pruefeOptionen`, Klassen-CC 42, 6 Parameter | PMD | Komplexität entsteht aus den Invarianten der Aggregate Root; Aufteilen würde die Regeln nur verstreuen |
+| Kein Handlungsbedarf | ungenutzter Parameter `request` in `PageService` | PMD | Fehlalarm: Helidon schreibt die Handler-Signatur vor |
+| Kein Handlungsbedarf | JUnit 6.2.0-M1, SLF4J 2.1.0-alpha1 | versions | Vorabversionen, auf stabiles Release warten |
+
+**Entscheidung:** Die Maßnahmen werden in dieser Aufgabe nur dokumentiert und nicht umgesetzt. Der Code bleibt auf dem
+getesteten Stand (194 Tests grün). Die Maßnahmen mit Schweregrad „Mittel“ sind für die nächste Iteration vorgesehen.
+
+**LLM-Einsatz:** ChatGPT GPT-6 Medium, 19.11.2026, neuer Chat ohne Vorwissen. Prompt mit allen Messergebnissen, den
+drei eigenen Beobachtungen und den betroffenen Code-Auszügen; Frage nach Schweregrad, Maßnahmen mit Aufwand,
+Top 3 und den Unterschieden zwischen SonarQube und PMD.
+Prompt und vollständige Antwort: [5_3_LLM_Prompt_und_Antwort.md](5_3_LLM_Prompt_und_Antwort.md).
+
+### Kritische Bewertung der LLM-Vorschläge
+
+| LLM-Vorschlag | Bewertung | Begründung |
+| --- | --- | --- |
+| Komplexität und 6 Parameter in `Abstimmung` belassen, kein Builder | ✅ zugestimmt | Invariantenprüfung gehört in die Aggregate Root; Builder wäre Overengineering |
+| `request`-Parameter als Fehlalarm akzeptieren | ✅ zugestimmt | Signatur ist von Helidon vorgegeben |
+| Exception-Vertrag festlegen statt alles zu vereinheitlichen | ✅ übernommen | Unterscheidung Fachregel vs. Programmierfehler ist begründbar |
+| Top 1: `hamcrest-all` entfernen und Tests auf JUnit-Assertions umschreiben | ⚠️ angepasst | Tests nutzen echte Matcher (`is`, `containsString`); Tausch auf `hamcrest` 3.0 ist einfacher |
+| Top 2: Maven Enforcer (Schweregrad „Mittel“) | ❌ überbewertet → Niedrig | Maven Wrapper legt Maven 3.10.0 fest, CI legt Java 27 fest; das LLM empfiehlt den Wrapper „zusätzlich“, obwohl er existiert |
+| H2 nach YAGNI entfernen | ❌ abgelehnt | In-Memory-Repository mit H2 ist laut Strategie (Übung 4.1) und Blatt 5 der nächste Schritt |
+| `catch` im Validator auf `AbstimmungsregelVerletztException` einengen | ✅ zugestimmt, gegen Code geprüft | `Titel` wirft nur diese Exception; das LLM schrieb die Methode fälschlich als `static` |
+| Logging mit SLF4J | ⚠️ angepasst | der JDK-eigene `System.Logger` reicht ohne zusätzliche Abhängigkeit; das Projekt loggt ohnehin über `helidon-logging-jul` |
+| Selbstkorrektur: `erstelle(id, nutzer, null, …)` ist mehrdeutig | ✅ korrekt | kompiliert nicht; deshalb nutzt unser Test aus Aufgabe 2 `(Titel) null` |
+| „0 Issues heißt nicht keine Schuld“ | ✅ zentrale Erkenntnis | Ergebnis hängt vom Regelwerk ab: SonarQube 0, PMD 8 Meldungen auf demselben Code |
+
+**Fazit:** Die messbare technische Schuld ist gering. Die relevanten Schulden (veraltete Testbibliothek, unklarer
+Exception-Vertrag, doppelte API) hat kein Tool direkt gemeldet; sie kamen aus der eigenen Analyse in Aufgabe 1 und
+den Abhängigkeitsdaten. Umgekehrt waren die meisten PMD-Meldungen keine echte Schuld. Kennzahlen zeigen also, *wo* man
+hinschauen sollte, die Bewertung braucht aber fachliches Verständnis.
 
 ## 4. Frontend-Entwicklung und Erweiterung der Anwendung
 
