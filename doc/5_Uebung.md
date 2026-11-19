@@ -212,3 +212,27 @@ hinschauen sollte, die Bewertung braucht aber fachliches Verständnis.
 **LLM-Einsatz:**
 
 ## 5. Reflexion zum Einsatz von Metriken und LLM
+
+Bearbeitung: Hassan
+
+Ich habe SonarQube in dieser Übung zum ersten Mal benutzt, und die Einrichtung mit Docker und Token hat mir sogar Spaß
+gemacht. Gelernt habe ich vor allem, dass Metriken ein Wegweiser sind und kein Urteil. Die Zahlen zeigen, wo man
+hinschauen sollte. Ob dort wirklich ein Problem liegt, musste ich selbst bewerten: Die Komplexität von 10 in `erstelle`
+und die sechs Parameter sind für eine Aggregate Root mit ihren Invarianten in Ordnung. Mein größter Aha-Moment war die
+Branch Coverage in Aufgabe 2. Ein grüner Test mit `assertNotEquals(null, a)` hat gar nichts geprüft, und erst die
+fehlende Verzweigung hat das sichtbar gemacht. Außerdem widersprechen sich die Tools: 464 Codezeilen bei SonarQube, 346
+im Auswertungsskript von Ronny, eine Klassenkomplexität von 35 oder 42, null oder acht Meldungen. Bevor man eine Zahl
+verwendet, muss man wissen, wie das Tool zählt.
+
+Das LLM hat am meisten beim Einordnen geholfen, zum Beispiel bei der Frage, ob eine Meldung echte Schuld oder ein
+Fehlalarm ist. Bei den Edge Cases brachte es zwei neue Ideen, zum Beispiel das unsichtbare Zero Width Space. Am
+wenigsten hilfreich war es bei Aussagen über unseren konkreten Code. Drei von fünf vorgeschlagenen Edge Cases waren
+schon getestet, es empfahl einen Maven Wrapper, den wir längst haben, und schrieb eine unserer Methoden fälschlich als
+`static`. Deshalb habe ich jede Aussage des LLM gegen den Code geprüft. Das kostet Zeit, verhindert aber eine falsche
+Dokumentation.
+
+Erschwert wurde die Übung durch den Ausstieg eines Projektmitarbeiters. Das hat Ronny und mich zeitlich zurückgeworfen,
+sodass wir keine Präsentation halten und kein Feedback erhalten konnten.
+
+Mein Fazit: Metriken und LLM ergänzen sich gut, weil das Tool misst und das LLM beim Einordnen hilft. Die Verantwortung
+für die Bewertung bleibt aber beim Menschen.
