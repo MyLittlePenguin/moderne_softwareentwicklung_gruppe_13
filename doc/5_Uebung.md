@@ -135,7 +135,8 @@ Schuld in Arbeitszeit um.
 
 - **SonarQube Community** (Regelwerk „Sonar way“) für Regelverletzungen und Code-Duplizierung
 - **PMD 7.29 mit CPD** (Copy-Paste-Detector) über `./mvnw pmd:pmd pmd:cpd`, eigenes Regelwerk `pmd-ruleset.xml`
-  (bestpractices, errorprone, design; Schwellen: Klassen-CC 30, Methoden-CC 10, max. 6 Parameter; CPD ab 30 Tokens)
+  (bestpractices, errorprone, design, multithreading, performance; Schwellen: Klassen-CC 30, Methoden-CC 10, Meldung ab
+  6 Parametern, Cognitive Complexity 15, max. 20 Methoden; CPD ab 30 Tokens)
 - **versions-maven-plugin 2.7** über `./mvnw versions:display-dependency-updates versions:display-plugin-updates`
   für veraltete Abhängigkeiten
 
@@ -147,8 +148,8 @@ Schuld in Arbeitszeit um.
 | SonarQube Maintainability / Debt | 0 Issues, Quality Gate bestanden |
 | Code-Duplizierung | SonarQube **0,0 %** (0 Zeilen, 0 Blöcke), PMD-CPD **0** Duplikate |
 | PMD-Regelverletzungen | **8** Meldungen (s. u.) |
-| Direkt gepflegte Abhängigkeiten und Plugins | alle aktuell |
-| Genutzte, aber veraltete Abhängigkeiten | Helidon 27.0.1 → 27.0.2, H2 2.4.240 → 2.5.252, `hamcrest-all` 1.3 (2012, eingestellt) |
+| Abhängigkeiten und Plugins mit eigener Versionsangabe in der `pom.xml` | alle aktuell (z. B. Thymeleaf, Checkstyle, PMD, JaCoCo) |
+| Veraltet, über den Helidon-Parent verwaltet | Helidon-Parent 27.0.1 → 27.0.2 (inkl. `helidon-licensing`), H2 2.4.240 → 2.5.252 (eingebunden, aber noch nicht genutzt), `hamcrest-all` 1.3 (2012, eingestellt) |
 
 Das versions-Plugin listet rund 450 Updates. Fast alle stammen aus der Stückliste (BOM) von Helidon und betreffen
 Bibliotheken, die wir nicht nutzen (z. B. Jackson, MongoDB, Testcontainers). Neuere Versionen von JUnit (6.2.0-M1) und
@@ -167,13 +168,13 @@ PMD-Prioritäten (1 = kritisch bis 5 = gering).
 | Hoch | – | | |
 | Mittel | `hamcrest-all` 1.3 seit 2012 nicht mehr gepflegt, genutzt in `MainTest` und `TemplatesTest` | versions | Artefakt gegen `org.hamcrest:hamcrest` 3.0 tauschen (Imports bleiben gleich) |
 | Mittel | Uneinheitlicher Exception-Vertrag in `Abstimmungszeitraum`: Konstruktor wirft `AbstimmungsregelVerletztException`, drei Methoden `IllegalArgumentException`, dazu dreifach identische Null-Prüfung | eigene Analyse (Aufgabe 1) | Regel festlegen und per Javadoc dokumentieren (Fachregel → eigene Exception, `null`-Argument → `IllegalArgumentException`), Null-Prüfung in eine Methode zusammenführen |
-| Mittel | Zwei `erstelle`-Überladungen (`Titel`/`String`) und zwei Getter `getTitel()`/`getTitelObjekt()` | eigene Analyse, PMD (6 Parameter) | `Titel`-Variante als bevorzugte API festlegen; Umbau erst bei der nächsten API-Überarbeitung |
-| Niedrig | Helidon 27.0.1 statt 27.0.2 (Patch-Release) | versions | Parent-Version anheben, danach `./mvnw clean verify` und Server-Start prüfen |
+| Mittel | Zwei `erstelle`-Überladungen (`Titel`/`String`) und zwei Getter `getTitel()`/`getTitelObjekt()` | eigene Analyse, PMD (6 Parameter) | `Titel`-Variante als bevorzugte API festlegen und dokumentieren; Getter erst bei einer größeren API-Überarbeitung umbauen |
+| Niedrig | Helidon 27.0.1 statt 27.0.2 (Patch-Release, auch `helidon-licensing`) | versions | Parent-Version anheben, danach `./mvnw clean verify` und Server-Start prüfen |
 | Niedrig | `System.out.println` in `Main` (PMD Priorität 2) | PMD | `System.Logger` des JDK verwenden |
 | Niedrig | Fehlende `serialVersionUID` in `AbstimmungsregelVerletztException` | PMD | Konstante ergänzen |
 | Niedrig | Exception als Kontrollfluss in `AbstimmungEingabeValidator.istGueltigerTitel` mit breitem `catch (IllegalArgumentException)` | eigene Analyse | auf `AbstimmungsregelVerletztException` einengen; `Titel` wirft an allen 4 Stellen nur diese |
 | Niedrig | `maven-site-plugin` ohne Version, keine Mindest-Maven-Version | versions | Version festlegen; Enforcer nicht nötig, da Maven Wrapper (Maven 3.10.0) und CI (Java 27) die Umgebung schon festlegen |
-| Niedrig | H2 2.4.240 statt 2.5.252 | versions | beim Bau des In-Memory-Repositorys mit aktualisieren |
+| Niedrig | H2 2.4.240 statt 2.5.252 (noch nicht genutzt) | versions | behalten und beim Bau des In-Memory-Repositorys mit aktualisieren |
 | Kein Handlungsbedarf | CC 10 in `erstelle` und `pruefeOptionen`, Klassen-CC 42, 6 Parameter | PMD | Komplexität entsteht aus den Invarianten der Aggregate Root; Aufteilen würde die Regeln nur verstreuen |
 | Kein Handlungsbedarf | ungenutzter Parameter `request` in `PageService` | PMD | Fehlalarm: Helidon schreibt die Handler-Signatur vor |
 | Kein Handlungsbedarf | JUnit 6.2.0-M1, SLF4J 2.1.0-alpha1 | versions | Vorabversionen, auf stabiles Release warten |
@@ -190,20 +191,20 @@ Prompt und vollständige Antwort: [5_3_LLM_Prompt_und_Antwort.md](5_3_LLM_Prompt
 
 | LLM-Vorschlag | Bewertung | Begründung |
 | --- | --- | --- |
-| Komplexität und 6 Parameter in `Abstimmung` belassen, kein Builder | ✅ zugestimmt | Invariantenprüfung gehört in die Aggregate Root; Builder wäre Overengineering |
+| Komplexität und 6 Parameter in `Abstimmung` belassen, kein Builder | ✅ zugestimmt, Einstufung leicht abweichend | Invariantenprüfung gehört in die Aggregate Root; Builder wäre Overengineering. Das LLM stuft Klassen-CC 42 und eine 6-Parameter-Meldung als „Niedrig“ (beobachten) ein, wir als „kein Handlungsbedarf“ |
 | `request`-Parameter als Fehlalarm akzeptieren | ✅ zugestimmt | Signatur ist von Helidon vorgegeben |
 | Exception-Vertrag festlegen statt alles zu vereinheitlichen | ✅ übernommen | Unterscheidung Fachregel vs. Programmierfehler ist begründbar |
-| Top 1: `hamcrest-all` entfernen und Tests auf JUnit-Assertions umschreiben | ⚠️ angepasst | Tests nutzen echte Matcher (`is`, `containsString`); Tausch auf `hamcrest` 3.0 ist einfacher |
+| Top 1: `hamcrest-all` ersetzen (Tests auf JUnit-Assertions umschreiben, sofern keine speziellen Matcher nötig; sonst aktuelle Hamcrest-Version) | ✅ Alternative des LLM gewählt | Die Tests nutzen Matcher (`is`, `containsString`); der Tausch auf `hamcrest` 3.0 ändert nur die `pom.xml` |
 | Top 2: Maven Enforcer (Schweregrad „Mittel“) | ❌ überbewertet → Niedrig | Maven Wrapper legt Maven 3.10.0 fest, CI legt Java 27 fest; das LLM empfiehlt den Wrapper „zusätzlich“, obwohl er existiert |
-| H2 nach YAGNI entfernen | ❌ abgelehnt | In-Memory-Repository mit H2 ist laut Strategie (Übung 4.1) und Blatt 5 der nächste Schritt |
+| H2 prüfen und nach YAGNI ggf. entfernen | ✅ behalten | Das LLM rät selbst, H2 zu behalten, wenn es bald gebraucht wird. Das ist der Fall: Das In-Memory-Repository mit H2 ist laut Strategie (Übung 4.1) und Blatt 5 der nächste Schritt |
 | `catch` im Validator auf `AbstimmungsregelVerletztException` einengen | ✅ zugestimmt, gegen Code geprüft | `Titel` wirft nur diese Exception; das LLM schrieb die Methode fälschlich als `static` |
-| Logging mit SLF4J | ⚠️ angepasst | der JDK-eigene `System.Logger` reicht ohne zusätzliche Abhängigkeit; das Projekt loggt ohnehin über `helidon-logging-jul` |
+| Logging mit SLF4J | ⚠️ angepasst | der JDK-eigene `System.Logger` reicht ohne zusätzliche Abhängigkeit im Code |
 | Selbstkorrektur: `erstelle(id, nutzer, null, …)` ist mehrdeutig | ✅ korrekt | kompiliert nicht; deshalb nutzt unser Test aus Aufgabe 2 `(Titel) null` |
 | „0 Issues heißt nicht keine Schuld“ | ✅ zentrale Erkenntnis | Ergebnis hängt vom Regelwerk ab: SonarQube 0, PMD 8 Meldungen auf demselben Code |
 
-**Fazit:** Die messbare technische Schuld ist gering. Die relevanten Schulden (veraltete Testbibliothek, unklarer
-Exception-Vertrag, doppelte API) hat kein Tool direkt gemeldet; sie kamen aus der eigenen Analyse in Aufgabe 1 und
-den Abhängigkeitsdaten. Umgekehrt waren die meisten PMD-Meldungen keine echte Schuld. Kennzahlen zeigen also, *wo* man
+**Fazit:** Die messbare technische Schuld ist gering. Die relevanten Schulden hat keines der Analyse-Tools für den
+Code (SonarQube, PMD) gemeldet: Die veraltete Testbibliothek fand erst das versions-Plugin, den unklaren
+Exception-Vertrag und die doppelte API die eigene Analyse aus Aufgabe 1. Umgekehrt waren die meisten PMD-Meldungen keine echte Schuld. Kennzahlen zeigen also, *wo* man
 hinschauen sollte, die Bewertung braucht aber fachliches Verständnis.
 
 ## 4. Frontend-Entwicklung und Erweiterung der Anwendung
