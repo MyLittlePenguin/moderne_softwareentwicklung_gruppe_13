@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:text="${title}">Anmeldung – Votee</title>
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
+</head>
+<body>
+	<h1>Anmeldung</h1>
+	<div id="login-formular-container" th:fragment="login-formular">
+		<p role="alert" class="fehler" th:if="${fehler != null}" th:text="${fehler}">Fehlermeldung</p>
+		<form action="/login" method="post"
+		      hx-post="/login"
+		      hx-target="#login-formular-container"
+		      hx-swap="outerHTML">
+			<div>
+				<label for="benutzername">Benutzername</label>
+				<input id="benutzername" name="benutzername" type="text" required th:value="${benutzername}">
+			</div>
+			<div>
+				<label for="passwort">Passwort</label>
+				<input id="passwort" name="passwort" type="password" required>
+			</div>
+			<div>
+				<label for="einmalCode">2FA-Einmalcode (5 Ziffern)</label>
+				<input id="einmalCode" name="einmalCode" type="text"
+				       inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5"
+				       placeholder="00000" required>
+			</div>
+			<button type="submit" hx-disable>Anmelden</button>
+		</form>
+	</div>
+	<p><a href="/">Zurück zur Übersicht</a></p>
+</body>
+</html>

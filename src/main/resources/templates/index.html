@@ -4,12 +4,44 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title th:text="${title}">Votee</title>
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
 </head>
-<body>
-	<h1>Votee</h1>
-	<h2>Umfragen</h2>
-	<ul>
-		<p>Noch keine Umfragen vorhanden.</p>
-	</ul>
+<body th:attr="'hx-headers:inherited'=${csrfHeadersJson}">
+	<header>
+		<h1>Votee</h1>
+		<nav>
+			<div th:if="${session == null}">
+				<a href="/login">Anmelden</a>
+			</div>
+			<div th:if="${session != null}">
+				<span>Angemeldet als <strong th:text="${session.benutzername}">Nutzer</strong></span>
+				<a th:if="${session.istAdministrator()}" href="/abstimmungen/neu">Neue Abstimmung erstellen</a>
+				<form action="/logout" method="post" hx-post="/logout" style="display:inline">
+					<input type="hidden" name="_csrf" th:value="${csrfToken}">
+					<button type="submit" hx-disable>Abmelden</button>
+				</form>
+			</div>
+		</nav>
+	</header>
+
+	<main>
+		<h2>Umfragen</h2>
+		<p th:if="${abstimmungen == null or #lists.isEmpty(abstimmungen)}">Noch keine Umfragen vorhanden.</p>
+		<ul th:if="${abstimmungen != null and !#lists.isEmpty(abstimmungen)}">
+			<li th:each="abstimmung : ${abstimmungen}">
+				<h3 th:text="${abstimmung.titel}">Titel</h3>
+				<p th:if="${!#strings.isEmpty(abstimmung.beschreibung)}" th:text="${abstimmung.beschreibung}">Beschreibung</p>
+				<p>
+					Zeitraum:
+					<span th:text="${abstimmung.beginn}">Beginn</span>
+					bis
+					<span th:text="${abstimmung.ende}">Ende</span>
+				</p>
+				<ul>
+					<li th:each="option : ${abstimmung.optionen}" th:text="${option}">Option</li>
+				</ul>
+			</li>
+		</ul>
+	</main>
 </body>
 </html>

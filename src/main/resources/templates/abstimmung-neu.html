@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:text="${title}">Neue Abstimmung – Votee</title>
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
+</head>
+<body th:attr="'hx-headers:inherited'=${csrfHeadersJson}">
+	<h1>Neue Abstimmung erstellen</h1>
+	<div id="abstimmung-formular-container" th:fragment="abstimmung-formular">
+		<p role="alert" class="fehler" th:if="${fehler != null}" th:text="${fehler}">Fehlermeldung</p>
+		<form action="/abstimmungen" method="post"
+		      hx-post="/abstimmungen"
+		      hx-target="#abstimmung-formular-container"
+		      hx-swap="outerHTML">
+			<input type="hidden" name="_csrf" th:value="${csrfToken}">
+			<div>
+				<label for="titel">Titel (3–100 Zeichen)</label>
+				<input id="titel" name="titel" type="text" minlength="3" maxlength="100" required th:value="${titel}">
+			</div>
+			<div>
+				<label for="beschreibung">Beschreibung (optional)</label>
+				<textarea id="beschreibung" name="beschreibung" rows="3" th:text="${beschreibung}"></textarea>
+			</div>
+			<div>
+				<label for="beginn">Beginn (TT.MM.JJJJ HH:MM)</label>
+				<input id="beginn" name="beginn" type="text" placeholder="01.03.2027 09:00" required th:value="${beginn}">
+			</div>
+			<div>
+				<label for="ende">Ende / Frist (TT.MM.JJJJ HH:MM)</label>
+				<input id="ende" name="ende" type="text" placeholder="15.03.2027 18:00" required th:value="${ende}">
+			</div>
+			<fieldset>
+				<legend>Antwortoptionen (mindestens 2)</legend>
+				<div id="optionen-liste">
+					<div class="option-zeile" th:each="optionWert : ${optionen}">
+						<input name="optionen" type="text" placeholder="Antwortoption" th:value="${optionWert}">
+					</div>
+				</div>
+				<button type="button"
+				        hx-get="/abstimmungen/neu/option-feld"
+				        hx-target="#optionen-liste"
+				        hx-swap="beforeend">
+					Weitere Option hinzufügen
+				</button>
+			</fieldset>
+			<button type="submit" hx-disable>Abstimmung erstellen</button>
+		</form>
+	</div>
+
+	<th:block th:if="${false}">
+		<div class="option-zeile" th:fragment="option-zeile">
+			<input name="optionen" type="text" placeholder="Antwortoption" th:value="${wert}">
+		</div>
+	</th:block>
+
+	<p><a href="/">Zurück zur Übersicht</a></p>
+</body>
+</html>

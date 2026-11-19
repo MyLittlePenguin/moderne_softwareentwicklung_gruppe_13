@@ -504,3 +504,37 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **244/244 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+---
+
+## Interaktion 17
+
+### Benutzeranfrage
+> ja
+
+### Umsetzung Phase 5 (TDD: Thymeleaf + htmx-4-HTTP-Adapter, Templates & Wiring)
+1. **Rote Phase (Tests zuerst):**
+   - [TemplatesTest.java](../src/test/java/de/mse/votee_backend/TemplatesTest.java): Test für fragmentweises Rendern (`renderFragment`) ergänzt.
+   - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): 8 Helidon-`@ServerTest`-Integrationstests gegen isolierte H2-In-Memory-DB und fixe `Clock`:
+     - Admin-Login mit 5-stelligem Code `00000` setzt `HttpOnly; SameSite=Lax`-Session-Cookie und sendet `HX-Redirect: /` (`204 No Content`).
+     - Ungültiger/falscher Einmalcode liefert `422 Unprocessable Content` als HTMX-Fragment mit `Vary: HX-Request`.
+     - Unangemeldete Zugriffe auf `/abstimmungen/neu` und `POST /abstimmungen` liefern `401 Unauthorized` (+ `HX-Redirect: /login` bei HTMX).
+     - Bürger:innen erhalten `403 Forbidden`.
+     - Admin ohne gültiges CSRF-Token erhält `403 Forbidden`.
+     - Admin erstellt Abstimmung via htmx 4 (`GET /abstimmungen/neu`, `GET /abstimmungen/neu/option-feld`, `POST /abstimmungen` mit `X-CSRF-Token`) → `HX-Redirect: /`, neue Abstimmung erscheint auf `/`.
+     - Admin mit `beginn` in der Vergangenheit erhält `422 Unprocessable Content` als Formular-Fragment inkl. erhaltener Eingaben (nichts gespeichert).
+     - Logout (`POST /logout`) invalidiert die Session.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop test` lief erwartungsgemäß rot.
+
+2. **Grüne Phase (Implementierung):**
+   - [Templates.java](../src/main/java/de/mse/votee_backend/Templates.java): `renderFragment(template, fragment, variables)` ergänzt.
+   - [HtmxHelfer.java](../src/main/java/de/mse/votee_backend/HtmxHelfer.java): Hilfsmethoden für `HX-Request`, `HX-Redirect`, `Vary: HX-Request`, `X-CSRF-Token` / `_csrf`, `HttpOnly; SameSite=Lax`-Cookies und `csrfHeadersJson`.
+   - [AuthHttpService.java](../src/main/java/de/mse/votee_backend/AuthHttpService.java): Routen `GET /login`, `POST /login` (`422`-Fragment bei Fehler), `POST /logout` (CSRF-geschützt).
+   - [AbstimmungHttpService.java](../src/main/java/de/mse/votee_backend/AbstimmungHttpService.java): Admin-geschützte Routen `GET /abstimmungen/neu`, `GET /abstimmungen/neu/option-feld`, `POST /abstimmungen` (serverseitige `NutzerId` aus Session, `422`-Formular-Fragment bei Fachregelverletzung).
+   - [PageService.java](../src/main/java/de/mse/votee_backend/PageService.java): Bindet `GET /` an `AbstimmungService.findeAlle()` und aktive `Session` an.
+   - [Main.java](../src/main/java/de/mse/votee_backend/Main.java): Composition Root verdrahtet `DbClient`, `DatenbankInitialisierung`, `H2AbstimmungRepository`, `kontoverwaltung`-Services, `AbstimmungService` und alle HTTP-Services per Konstruktor-Injektion (inkl. `setup(..., Clock)` für Tests).
+   - **Templates (Thymeleaf + htmx 4):** [index.html](../src/main/resources/templates/index.html), [login.html](../src/main/resources/templates/login.html), [abstimmung-neu.html](../src/main/resources/templates/abstimmung-neu.html) mit htmx 4 (`hx-headers:inherited`, `hx-disable`, dynamische Optionen, `422`-Auto-Swap, 5-stelliges `einmalCode`-Feld). *(Hinweis aus den Tests: Attributnamen mit Doppelpunkt wie `hx-headers:inherited` müssen in Thymeleaf-`th:attr` einfach gequotet werden: `th:attr="'hx-headers:inherited'=${csrfHeadersJson}"`.)*
+   - **Konfiguration:** [application.yaml](../src/main/resources/application.yaml) um `votee.auth`-Abschnitt erweitert; [src/test/resources/application.yaml](../src/test/resources/application.yaml) für isolierte H2-In-Memory-Tests angelegt.
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **253/253 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
