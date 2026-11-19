@@ -427,3 +427,30 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **192/192 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+---
+
+## Interaktion 14
+
+### Benutzeranfrage
+> ja
+
+### Umsetzung Phase 2 (TDD: H2-Persistenz)
+1. **Rote Phase (Tests zuerst):**
+   - [H2AbstimmungRepositoryTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/infrastructure/H2AbstimmungRepositoryTest.java) mit 7 Integrationstests gegen eine isolierte H2-In-Memory-Datenbank erstellt:
+     - Speichern & Laden aller Felder inkl. exakter Optionsreihenfolge.
+     - Leere Beschreibung sowie Umlaute/Sonderzeichen.
+     - Unbekannte `AbstimmungId` liefert `Optional.empty()`.
+     - `findeAlle()` bei leerer DB und bei mehreren Abstimmungen (sortiert nach `beginn ASC`, ohne N+1-Abfragen).
+     - Laden gespeicherter Abstimmungen mit `beginn` in der Vergangenheit.
+     - Idempotente Schema-Initialisierung.
+     - Transaktions-Rollback bei doppelter `AbstimmungId`.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop test` lief erwartungsgemäß rot.
+
+2. **Grüne Phase (Implementierung):**
+   - [schema.sql](../src/main/resources/schema.sql): Tabellen `abstimmungen` und `abstimm_optionen` (mit `position`-Spalte und Foreign Key `ON DELETE CASCADE`) definiert.
+   - [DatenbankInitialisierung.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/infrastructure/DatenbankInitialisierung.java): Liest `/schema.sql` aus dem Classpath und führt alle DDL-Anweisungen idempotent über den Helidon `DbClient` aus.
+   - [H2AbstimmungRepository.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/infrastructure/H2AbstimmungRepository.java): Implementiert `AbstimmungRepository` mit transaktionalem `speichere(...)` (`DbTransaction` mit `commit`/`rollback`), `findeNachId(...)` und `findeAlle()` (Batch-Laden der Optionen ohne N+1-Queries).
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **199/199 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
