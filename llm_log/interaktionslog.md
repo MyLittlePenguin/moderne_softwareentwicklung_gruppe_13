@@ -651,6 +651,21 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
    - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Neuen HTTP-Integrationstest `startseiteSortiertAbstimmungenNachEnddatum()` ergänzt.
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **255/255 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
 
+---
+
+## Interaktion 24
+
+### Benutzeranfrage
+> die README.md ist veraltet. aktualisiere die
+
+### Umsetzung
+- [README.md](../README.md) auf den aktuellen Projektstand aktualisiert:
+  - Technologie-Stack um htmx 4, eigenes CSS (`StatischeDateienService`) und die aktive H2-Persistenz (`schema.sql`, `DatenbankInitialisierung`, `H2AbstimmungRepository`) ergänzt.
+  - Aktuellen Funktionsumfang (Übersicht mit Enddatum-Sortierung und deaktivierten Radio-Buttons, Login/Logout mit 5-stelligem 2FA-Stub `00000`, Session/CSRF, Admin-Abstimmungserstellung mit `datetime-local`) sowie die DDD-/Hexagonal-Architekturübersicht dokumentiert.
+  - Startbefehle (`./mvnw compile exec:exec` und JAR-Start), dateibasierte H2-Konfiguration (`./data/votee`) und Entwicklungs-Standardkonten aus `application.yaml` ergänzt.
+  - Testübersicht (255 Tests über Domäne, Persistenz, Kontoverwaltung und `@ServerTest`-HTTP-Integration) sowie Verweise auf `doc/` und `llm_log/interaktionslog.md` aktualisiert.
+
+
 
 
 
