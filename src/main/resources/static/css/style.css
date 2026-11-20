@@ -433,31 +433,8 @@ button[disabled] {
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.datum-picker-zeile {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	margin-top: 0.25rem;
-}
-
-.formular-feld .datum-picker-label {
-	font-size: 0.8rem;
-	font-weight: 400;
-	color: var(--farbe-text-sekundaer);
-}
-
-.formular-feld .datum-picker {
-	font-size: 0.88rem;
+.formular-feld input[type="datetime-local"] {
 	font-variant-numeric: tabular-nums;
-	padding: 0.4rem 0.65rem;
-	background-color: var(--farbe-flaeche-dezent);
-	border-color: var(--farbe-rahmen);
-	color: var(--farbe-text-sekundaer);
-}
-
-.formular-feld .datum-picker:focus {
-	background-color: var(--farbe-flaeche);
-	color: var(--farbe-text);
 }
 
 .formular-feld textarea {

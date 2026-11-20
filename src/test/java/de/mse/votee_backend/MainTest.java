@@ -51,15 +51,6 @@ class MainTest {
     }
 
     @Test
-    void datumPickerScriptIsServed() {
-        try (Http1ClientResponse response = client.get("/js/datum-picker.js").request()) {
-            assertThat(response.status(), is(Status.OK_200));
-            assertThat(response.headers().get(HeaderNames.CONTENT_TYPE).get(), containsString("text/javascript"));
-            assertThat(response.as(String.class), containsString("data-datum-ziel"));
-        }
-    }
-
-    @Test
     void unknownRouteReturns404() {
         try (Http1ClientResponse response = client.get("/gibt-es-nicht").request()) {
             assertThat(response.status(), is(Status.NOT_FOUND_404));

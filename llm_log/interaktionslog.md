@@ -615,6 +615,27 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
    - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Prüfungen für `datetime-local`-Picker, `/js/datum-picker.js` und deaktivierte Radio-Buttons ergänzt.
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **255/255 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
 
+---
+
+## Interaktion 22
+
+### Benutzeranfrage
+> du kannst die separaten textfelder für die datums- und zeiteingabe entfernen.
+
+### Umsetzung
+1. **Formular ([abstimmung-neu.html](../src/main/resources/templates/abstimmung-neu.html)):**
+   - Separate Textfelder entfernt; `beginn` und `ende` sind nun direkt `<input type="datetime-local">` (`AbstimmungHttpService.parseZeitpunkt` unterstützt das Format `yyyy-MM-dd'T'HH:mm` bereits nativ).
+   - Einbindung von `/js/datum-picker.js` entfernt.
+2. **Bereinigung:**
+   - Nicht mehr benötigtes Skript `src/main/resources/static/js/datum-picker.js` gelöscht.
+   - [StatischeDateienService.java](../src/main/java/de/mse/votee_backend/StatischeDateienService.java): Route `/js/datum-picker.js` entfernt.
+   - [style.css](../src/main/resources/static/css/style.css): Nicht mehr benötigte Klassen `.datum-picker-*` entfernt und `font-variant-numeric: tabular-nums` direkt für `input[type="datetime-local"]` belassen.
+3. **Tests & Verifikation:**
+   - [MainTest.java](../src/test/java/de/mse/votee_backend/MainTest.java): Obsoleten Test für `/js/datum-picker.js` entfernt.
+   - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Prüfung auf direkte `datetime-local`-Felder (`id="beginn"`, `id="ende"`) sowie End-to-End-Erstellung mit `datetime-local`-Werten (`2027-03-01T09:00` / `2027-03-15T18:00`) und Darstellung im deutschen Format auf `/` angepasst.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop clean checkstyle:check verify`: **254/254 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+
 
 
 
