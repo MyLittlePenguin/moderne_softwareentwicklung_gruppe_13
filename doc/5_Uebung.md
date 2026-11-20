@@ -149,7 +149,7 @@ Schuld in Arbeitszeit um.
 | Code-Duplizierung | SonarQube **0,0 %** (0 Zeilen, 0 Blöcke), PMD-CPD **0** Duplikate |
 | PMD-Regelverletzungen | **8** Meldungen (s. u.) |
 | Abhängigkeiten und Plugins mit eigener Versionsangabe in der `pom.xml` | alle aktuell (z. B. Thymeleaf, Checkstyle, PMD, JaCoCo) |
-| Veraltet, über den Helidon-Parent verwaltet | Helidon-Parent 27.0.1 → 27.0.2 (inkl. `helidon-licensing`), H2 2.4.240 → 2.5.252 (eingebunden, aber noch nicht genutzt), `hamcrest-all` 1.3 (2012, eingestellt) |
+| Veraltet, über den Helidon-Parent verwaltet | Helidon-Parent 27.0.1 → 27.0.2 (inkl. `helidon-licensing`), H2 2.4.240 → 2.5.252 (eingebunden, zum Analysezeitpunkt noch nicht genutzt), `hamcrest-all` 1.3 (2012, eingestellt) |
 
 Das versions-Plugin listet rund 450 Updates. Fast alle stammen aus der Stückliste (BOM) von Helidon und betreffen
 Bibliotheken, die wir nicht nutzen (z. B. Jackson, MongoDB, Testcontainers). Neuere Versionen von JUnit (6.2.0-M1) und
@@ -174,7 +174,7 @@ PMD-Prioritäten (1 = kritisch bis 5 = gering).
 | Niedrig | Fehlende `serialVersionUID` in `AbstimmungsregelVerletztException` | PMD | Konstante ergänzen |
 | Niedrig | Exception als Kontrollfluss in `AbstimmungEingabeValidator.istGueltigerTitel` mit breitem `catch (IllegalArgumentException)` | eigene Analyse | auf `AbstimmungsregelVerletztException` einengen; `Titel` wirft an allen 4 Stellen nur diese |
 | Niedrig | `maven-site-plugin` ohne Version, keine Mindest-Maven-Version | versions | Version festlegen; Enforcer nicht nötig, da Maven Wrapper (Maven 3.10.0) und CI (Java 27) die Umgebung schon festlegen |
-| Niedrig | H2 2.4.240 statt 2.5.252 (noch nicht genutzt) | versions | behalten und beim Bau des In-Memory-Repositorys mit aktualisieren |
+| Niedrig | H2 2.4.240 statt 2.5.252 (zum Analysezeitpunkt noch nicht genutzt) | versions | behalten und beim Einbau des H2-Repositorys (Aufgabe 4) mit aktualisieren |
 | Kein Handlungsbedarf | CC 10 in `erstelle` und `pruefeOptionen`, Klassen-CC 42, 6 Parameter | PMD | Komplexität entsteht aus den Invarianten der Aggregate Root; Aufteilen würde die Regeln nur verstreuen |
 | Kein Handlungsbedarf | ungenutzter Parameter `request` in `PageService` | PMD | Fehlalarm: Helidon schreibt die Handler-Signatur vor |
 | Kein Handlungsbedarf | JUnit 6.2.0-M1, SLF4J 2.1.0-alpha1 | versions | Vorabversionen, auf stabiles Release warten |
@@ -196,7 +196,7 @@ Prompt und vollständige Antwort: [5_3_LLM_Prompt_und_Antwort.md](5_3_LLM_Prompt
 | Exception-Vertrag festlegen statt alles zu vereinheitlichen | ✅ übernommen | Unterscheidung Fachregel vs. Programmierfehler ist begründbar |
 | Top 1: `hamcrest-all` ersetzen (Tests auf JUnit-Assertions umschreiben, sofern keine speziellen Matcher nötig; sonst aktuelle Hamcrest-Version) | ✅ Alternative des LLM gewählt | Die Tests nutzen Matcher (`is`, `containsString`); der Tausch auf `hamcrest` 3.0 ändert nur die `pom.xml` |
 | Top 2: Maven Enforcer (Schweregrad „Mittel“) | ❌ überbewertet → Niedrig | Maven Wrapper legt Maven 3.10.0 fest, CI legt Java 27 fest; das LLM empfiehlt den Wrapper „zusätzlich“, obwohl er existiert |
-| H2 prüfen und nach YAGNI ggf. entfernen | ✅ behalten | Das LLM rät selbst, H2 zu behalten, wenn es bald gebraucht wird. Das ist der Fall: Das In-Memory-Repository mit H2 ist laut Strategie (Übung 4.1) und Blatt 5 der nächste Schritt |
+| H2 prüfen und nach YAGNI ggf. entfernen | ✅ behalten | Das LLM rät selbst, H2 zu behalten, wenn es bald gebraucht wird. Das ist der Fall: Das H2-Repository war laut Strategie (Übung 4.1) der nächste Schritt und ist mit Aufgabe 4 als dateibasierte Datenbank umgesetzt |
 | `catch` im Validator auf `AbstimmungsregelVerletztException` einengen | ✅ zugestimmt, gegen Code geprüft | `Titel` wirft nur diese Exception; das LLM schrieb die Methode fälschlich als `static` |
 | Logging mit SLF4J | ⚠️ angepasst | der JDK-eigene `System.Logger` reicht ohne zusätzliche Abhängigkeit im Code |
 | Selbstkorrektur: `erstelle(id, nutzer, null, …)` ist mehrdeutig | ✅ korrekt | kompiliert nicht; deshalb nutzt unser Test aus Aufgabe 2 `(Titel) null` |

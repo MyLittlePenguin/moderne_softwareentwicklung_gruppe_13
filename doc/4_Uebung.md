@@ -210,7 +210,7 @@ Bearbeitung: Hassan
 JUnit-5-Tests ohne Server, Mocks oder Datenbank prüfen; die Testpakete spiegeln die Paketstruktur des Codes.
 Die anderen Contexts (Kontoverwaltung, Stimmabgabe, Abstimmungsansicht) sollen nur über IDs wie `AbstimmungId`
 und `NutzerId` verbunden werden. Offen gegenüber der Strategie aus Übung 3 sind noch das Repository-Interface
-`AbstimmungRepository` und die `infrastructure`-Schicht (H2 bzw. vorerst In-Memory), die als nächster Schritt
+`AbstimmungRepository` und die `infrastructure`-Schicht (H2 als dateibasierte Datenbank), die als nächster Schritt
 folgen.
 
 **(b) CI-Pipeline.** Die GitHub-Actions-Pipeline aus Übung 2 (`.github/workflows/maven.yml`) läuft bei jedem Push
