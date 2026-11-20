@@ -45,7 +45,7 @@ public class H2AbstimmungRepository implements AbstimmungRepository {
     private static final String SELECT_ALLE = """
             SELECT id, erstellt_von, titel, beschreibung, beginn, ende
             FROM abstimmungen
-            ORDER BY beginn ASC, id ASC
+            ORDER BY ende ASC, id ASC
             """;
 
     private static final String SELECT_OPTIONEN_NACH_ID = """

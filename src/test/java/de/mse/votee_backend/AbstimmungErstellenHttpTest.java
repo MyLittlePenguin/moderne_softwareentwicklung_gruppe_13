@@ -253,6 +253,44 @@ class AbstimmungErstellenHttpTest {
     }
 
     @Test
+    @DisplayName("Startseite zeigt Abstimmungen aufsteigend nach Enddatum sortiert an")
+    void startseiteSortiertAbstimmungenNachEnddatum() {
+        String cookie = anmeldenUndCookieHolen("admin", "admin-pass", "00000");
+        String csrf = csrfVonStartseiteHolen(cookie);
+
+        String spaeteresEndeBody = abstimmungFormBody("Abstimmung Spätes Ende", "",
+                "2027-02-01T09:00", "2027-12-20T18:00", List.of("Ja", "Nein"));
+        try (Http1ClientResponse response = client.post("/abstimmungen")
+                .header(HeaderNames.CONTENT_TYPE, MediaTypes.APPLICATION_FORM_URLENCODED.text())
+                .header(HeaderNames.COOKIE, cookie)
+                .header(HtmxHelfer.X_CSRF_TOKEN, csrf)
+                .header(HtmxHelfer.HX_REQUEST, "true")
+                .submit(spaeteresEndeBody)) {
+            assertThat(response.status(), is(Status.NO_CONTENT_204));
+        }
+
+        String frueheresEndeBody = abstimmungFormBody("Abstimmung Frühes Ende", "",
+                "2027-02-10T09:00", "2027-02-15T18:00", List.of("Ja", "Nein"));
+        try (Http1ClientResponse response = client.post("/abstimmungen")
+                .header(HeaderNames.CONTENT_TYPE, MediaTypes.APPLICATION_FORM_URLENCODED.text())
+                .header(HeaderNames.COOKIE, cookie)
+                .header(HtmxHelfer.X_CSRF_TOKEN, csrf)
+                .header(HtmxHelfer.HX_REQUEST, "true")
+                .submit(frueheresEndeBody)) {
+            assertThat(response.status(), is(Status.NO_CONTENT_204));
+        }
+
+        try (Http1ClientResponse indexResponse = client.get("/").request()) {
+            assertThat(indexResponse.status(), is(Status.OK_200));
+            String html = indexResponse.as(String.class);
+            int indexFrueh = html.indexOf("Abstimmung Frühes Ende");
+            int indexSpaet = html.indexOf("Abstimmung Spätes Ende");
+            assertThat(indexFrueh > 0, is(true));
+            assertThat(indexSpaet > indexFrueh, is(true));
+        }
+    }
+
+    @Test
     @DisplayName("Logout beendet die Sitzung, sodass geschützte Routen wieder 401 liefern")
     void logoutBeendetSitzung() {
         String cookie = anmeldenUndCookieHolen("admin", "admin-pass", "00000");

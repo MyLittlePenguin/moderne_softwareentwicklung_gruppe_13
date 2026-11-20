@@ -196,13 +196,13 @@ class AbstimmungServiceTest {
     }
 
     @Test
-    @DisplayName("findeAlle und findeNachId liefern gespeicherte Abstimmungen bzw. empty")
+    @DisplayName("findeAlle liefert gespeicherte Abstimmungen sortiert nach Enddatum, findeNachId bzw. empty")
     void findeAlleUndFindeNachId() {
         assertTrue(service.findeAlle().isEmpty());
         assertTrue(service.findeNachId(new AbstimmungId("unbekannt")).isEmpty());
 
-        AbstimmungId ersteId = service.erstelleAbstimmung(ADMIN, gueltigerBefehl());
-        AbstimmungId zweiteId = service.erstelleAbstimmung(ADMIN, new ErstelleAbstimmungBefehl(
+        AbstimmungId spaeteresEndeId = service.erstelleAbstimmung(ADMIN, gueltigerBefehl());
+        AbstimmungId frueheresEndeId = service.erstelleAbstimmung(ADMIN, new ErstelleAbstimmungBefehl(
                 "Radweg Nord",
                 null,
                 JETZT.plusDays(2),
@@ -211,8 +211,8 @@ class AbstimmungServiceTest {
 
         List<Abstimmung> alle = service.findeAlle();
         assertEquals(2, alle.size());
-        assertEquals(ersteId, alle.get(0).getId());
-        assertEquals(zweiteId, alle.get(1).getId());
+        assertEquals(frueheresEndeId, alle.get(0).getId());
+        assertEquals(spaeteresEndeId, alle.get(1).getId());
     }
 
     @Test

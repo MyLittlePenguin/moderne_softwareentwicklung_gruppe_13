@@ -112,38 +112,38 @@ class H2AbstimmungRepositoryTest {
     }
 
     @Test
-    @DisplayName("findeAlle liefert leere Liste bzw. alle Abstimmungen sortiert nach Beginn")
+    @DisplayName("findeAlle liefert leere Liste bzw. alle Abstimmungen sortiert nach Enddatum")
     void findeAlleLeerUndMitMehrerenAbstimmungen() {
         assertTrue(repository.findeAlle().isEmpty());
 
-        Abstimmung spaeter = Abstimmung.erstelle(
+        Abstimmung spaeteresEnde = Abstimmung.erstelle(
                 new AbstimmungId("abst-2"),
                 new NutzerId("admin-1"),
-                "Spätere Abstimmung",
-                "Beschreibung 2",
-                new Abstimmungszeitraum(
-                        LocalDateTime.of(2027, 6, 1, 8, 0),
-                        LocalDateTime.of(2027, 6, 10, 18, 0)),
-                List.of(new AbstimmOption("Ja"), new AbstimmOption("Nein")));
-
-        Abstimmung frueher = Abstimmung.erstelle(
-                new AbstimmungId("abst-1"),
-                new NutzerId("admin-1"),
-                "Frühere Abstimmung",
-                "Beschreibung 1",
+                "Späteres Ende",
+                "Beginnt früher, endet später",
                 new Abstimmungszeitraum(
                         LocalDateTime.of(2027, 4, 1, 8, 0),
-                        LocalDateTime.of(2027, 4, 10, 18, 0)),
+                        LocalDateTime.of(2027, 6, 20, 18, 0)),
+                List.of(new AbstimmOption("Ja"), new AbstimmOption("Nein")));
+
+        Abstimmung frueheresEnde = Abstimmung.erstelle(
+                new AbstimmungId("abst-1"),
+                new NutzerId("admin-1"),
+                "Früheres Ende",
+                "Beginnt später, endet früher",
+                new Abstimmungszeitraum(
+                        LocalDateTime.of(2027, 5, 1, 8, 0),
+                        LocalDateTime.of(2027, 5, 10, 18, 0)),
                 List.of(new AbstimmOption("Option 1"), new AbstimmOption("Option 2"), new AbstimmOption("Option 3")));
 
-        repository.speichere(spaeter);
-        repository.speichere(frueher);
+        repository.speichere(spaeteresEnde);
+        repository.speichere(frueheresEnde);
 
         List<Abstimmung> alle = repository.findeAlle();
         assertEquals(2, alle.size());
-        assertEquals(frueher.getId(), alle.get(0).getId());
+        assertEquals(frueheresEnde.getId(), alle.get(0).getId());
         assertEquals(3, alle.get(0).getOptionen().size());
-        assertEquals(spaeter.getId(), alle.get(1).getId());
+        assertEquals(spaeteresEnde.getId(), alle.get(1).getId());
         assertEquals(2, alle.get(1).getOptionen().size());
     }
 

@@ -635,6 +635,23 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
    - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Prüfung auf direkte `datetime-local`-Felder (`id="beginn"`, `id="ende"`) sowie End-to-End-Erstellung mit `datetime-local`-Werten (`2027-03-01T09:00` / `2027-03-15T18:00`) und Darstellung im deutschen Format auf `/` angepasst.
    - `./mvnw -o -Daether.syncContext.named.factory=noop clean checkstyle:check verify`: **254/254 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
 
+---
+
+## Interaktion 23
+
+### Benutzeranfrage
+> ändere die sortierung der anzeige nach dem end-datum der abstimmungen
+
+### Umsetzung
+1. **Sortierung ([H2AbstimmungRepository.java](../src/main/java/de/mse/votee_backend/abstimmungsverwaltung/infrastructure/H2AbstimmungRepository.java)):**
+   - `SELECT_ALLE` von `ORDER BY beginn ASC, id ASC` auf `ORDER BY ende ASC, id ASC` umgestellt, sodass Abstimmungen aufsteigend nach Enddatum (nächste Frist zuerst) geladen und auf der Startseite angezeigt werden.
+2. **Tests & Verifikation:**
+   - [H2AbstimmungRepositoryTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/infrastructure/H2AbstimmungRepositoryTest.java): Testfall in `findeAlleLeerUndMitMehrerenAbstimmungen()` mit gegensätzlichem Beginn/Ende angepasst, sodass die Sortierung explizit nach Enddatum geprüft wird.
+   - [AbstimmungServiceTest.java](../src/test/java/de/mse/votee_backend/abstimmungsverwaltung/application/AbstimmungServiceTest.java): Erwartete Reihenfolge in `findeAlleUndFindeNachId()` auf Sortierung nach Enddatum aktualisiert.
+   - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Neuen HTTP-Integrationstest `startseiteSortiertAbstimmungenNachEnddatum()` ergänzt.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **255/255 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+
 
 
 
