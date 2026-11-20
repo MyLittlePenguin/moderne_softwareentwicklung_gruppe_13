@@ -79,6 +79,7 @@ public final class Main {
         Templates templates = new Templates();
 
         server.routing(routing -> routing
+                .register("/", new StatischeDateienService())
                 .register("/", new PageService(templates, abstimmungService, sessionStore))
                 .register("/", new AuthHttpService(
                         templates, authentifizierungsService, sessionStore, sessionDauer))

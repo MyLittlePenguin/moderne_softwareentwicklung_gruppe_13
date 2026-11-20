@@ -538,3 +538,29 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **253/253 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+---
+
+## Interaktion 18
+
+### Benutzeranfrage
+> beachte das llm_log. bitte ergänzen mit den interaktionen.
+>
+> die ui dieser applikation ist noch ungestyled. erstelle mithilfe von css einen vorschlag für eine einfache und seriöse oberfläche.
+
+### Gestaltungsentwurf & Umsetzung (Schlichtes, seriöses CSS für Votee)
+1. **Gestaltungskonzept:**
+   - **Farb- und Kontrastkonzept (CSS Custom Properties in `:root`):** Ruhige, behördennahe Farbpalette mit gedecktem Dunkelblau (`#1b3a5c`) als Primärfarbe, neutralem Hellgrau (`#f4f6f9`) als Seitenhintergrund, klaren weißen Kartenflächen (`#ffffff`), feinen Rahmen (`#d5dde5`) sowie deutlicher Fehlerhervorhebung (`.fehler` mit roter linker Akzentlinie).
+   - **Typografie & Datenschutz:** System-Schriftarten-Stack ohne externe Font-CDNs (schnell und datenschutzfreundlich), Tabellenziffern (`tabular-nums`) für Zeiträume sowie Monospace-Schrift mit erhöhtem Zeichenabstand für den 5-stelligen 2FA-Einmalcode.
+   - **Struktur & Barrierefreiheit:** Einheitliche Kopfzeile mit oberer Akzentlinie, zentriertes Inhaltslayout (`880px` Übersicht, `660px` Formular, `460px` Anmeldung), sichtbare `:focus-visible`-Rahmen, visuelles Feedback für `hx-disable` (`button:disabled`) und Responsive-Anpassungen unter `640px`.
+
+2. **Änderungen im Projekt:**
+   - [style.css](../src/main/resources/static/css/style.css): Vollständiges Stylesheet ohne externe CSS-Frameworks oder Build-Schritt erstellt.
+   - [StatischeDateienService.java](../src/main/java/de/mse/votee_backend/StatischeDateienService.java): Schlanker Helidon-`HttpService`, der `/css/style.css` aus dem Classpath mit `text/css; charset=UTF-8` ausliefert.
+   - [Main.java](../src/main/java/de/mse/votee_backend/Main.java): `StatischeDateienService` im Routing registriert.
+   - **Templates:** [index.html](../src/main/resources/templates/index.html), [login.html](../src/main/resources/templates/login.html) und [abstimmung-neu.html](../src/main/resources/templates/abstimmung-neu.html) mit `/css/style.css` verknüpft und semantisch (einheitliche Kopf-/Fußzeile, Karten, Formulargruppen, Leerzustand) unter Beibehaltung aller htmx-4- und CSRF-Attribute strukturiert.
+   - [MainTest.java](../src/test/java/de/mse/votee_backend/MainTest.java): Prüfung auf Stylesheet-Einbindung in `/` und neuen Test `stylesheetIsServed()` für `GET /css/style.css` ergänzt.
+
+3. **Verifikation:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **254/254 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+

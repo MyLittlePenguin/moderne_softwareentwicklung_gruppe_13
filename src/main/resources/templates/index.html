@@ -4,44 +4,64 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title th:text="${title}">Votee</title>
+	<link rel="stylesheet" href="/css/style.css">
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
 </head>
 <body th:attr="'hx-headers:inherited'=${csrfHeadersJson}">
-	<header>
-		<h1>Votee</h1>
-		<nav>
-			<div th:if="${session == null}">
-				<a href="/login">Anmelden</a>
+	<header class="kopfzeile">
+		<div class="kopfzeile-inhalt">
+			<div class="marke">
+				<a class="marke-link" href="/"><h1>Votee</h1></a>
+				<span class="marke-untertitel">Abstimmungsportal</span>
 			</div>
-			<div th:if="${session != null}">
-				<span>Angemeldet als <strong th:text="${session.benutzername}">Nutzer</strong></span>
-				<a th:if="${session.istAdministrator()}" href="/abstimmungen/neu">Neue Abstimmung erstellen</a>
-				<form action="/logout" method="post" hx-post="/logout" style="display:inline">
-					<input type="hidden" name="_csrf" th:value="${csrfToken}">
-					<button type="submit" hx-disable>Abmelden</button>
-				</form>
-			</div>
-		</nav>
+			<nav class="hauptnavigation" aria-label="Hauptnavigation">
+				<div class="nav-gruppe" th:if="${session == null}">
+					<a class="schaltflaeche schaltflaeche-primar" href="/login">Anmelden</a>
+				</div>
+				<div class="nav-gruppe" th:if="${session != null}">
+					<span class="nutzer-hinweis">Angemeldet als <strong th:text="${session.benutzername}">Nutzer</strong></span>
+					<a class="schaltflaeche schaltflaeche-primar" th:if="${session.istAdministrator()}" href="/abstimmungen/neu">Neue Abstimmung erstellen</a>
+					<form class="inline-formular" action="/logout" method="post" hx-post="/logout">
+						<input type="hidden" name="_csrf" th:value="${csrfToken}">
+						<button class="schaltflaeche schaltflaeche-sekundaer" type="submit" hx-disable>Abmelden</button>
+					</form>
+				</div>
+			</nav>
+		</div>
 	</header>
 
-	<main>
-		<h2>Umfragen</h2>
-		<p th:if="${abstimmungen == null or #lists.isEmpty(abstimmungen)}">Noch keine Umfragen vorhanden.</p>
-		<ul th:if="${abstimmungen != null and !#lists.isEmpty(abstimmungen)}">
-			<li th:each="abstimmung : ${abstimmungen}">
-				<h3 th:text="${abstimmung.titel}">Titel</h3>
-				<p th:if="${!#strings.isEmpty(abstimmung.beschreibung)}" th:text="${abstimmung.beschreibung}">Beschreibung</p>
-				<p>
-					Zeitraum:
+	<main class="seite">
+		<div class="seitenkopf">
+			<h2>Umfragen</h2>
+			<p class="seiten-beschreibung">Übersicht aller aktuellen und geplanten Abstimmungen.</p>
+		</div>
+
+		<div class="leerzustand" th:if="${abstimmungen == null or #lists.isEmpty(abstimmungen)}">
+			<p>Noch keine Umfragen vorhanden.</p>
+		</div>
+
+		<ul class="abstimmungen-liste" th:if="${abstimmungen != null and !#lists.isEmpty(abstimmungen)}">
+			<li class="karte abstimmung-karte" th:each="abstimmung : ${abstimmungen}">
+				<h3 class="abstimmung-titel" th:text="${abstimmung.titel}">Titel</h3>
+				<p class="abstimmung-beschreibung" th:if="${!#strings.isEmpty(abstimmung.beschreibung)}" th:text="${abstimmung.beschreibung}">Beschreibung</p>
+				<p class="abstimmung-zeitraum">
+					<span class="meta-label">Zeitraum:</span>
 					<span th:text="${abstimmung.beginn}">Beginn</span>
 					bis
 					<span th:text="${abstimmung.ende}">Ende</span>
 				</p>
-				<ul>
-					<li th:each="option : ${abstimmung.optionen}" th:text="${option}">Option</li>
-				</ul>
+				<div class="optionen-bereich">
+					<span class="meta-label">Antwortoptionen</span>
+					<ul class="optionen-liste">
+						<li class="option-eintrag" th:each="option : ${abstimmung.optionen}" th:text="${option}">Option</li>
+					</ul>
+				</div>
 			</li>
 		</ul>
 	</main>
+
+	<footer class="fusszeile">
+		<div class="fusszeile-inhalt">Votee – Digitales Abstimmungssystem</div>
+	</footer>
 </body>
 </html>
