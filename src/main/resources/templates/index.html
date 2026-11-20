@@ -50,12 +50,17 @@
 					bis
 					<span th:text="${abstimmung.ende}">Ende</span>
 				</p>
-				<div class="optionen-bereich">
-					<span class="meta-label">Antwortoptionen</span>
+				<fieldset class="optionen-bereich">
+					<legend class="meta-label">Antwortoptionen</legend>
 					<ul class="optionen-liste">
-						<li class="option-eintrag" th:each="option : ${abstimmung.optionen}" th:text="${option}">Option</li>
+						<li class="option-eintrag" th:each="option : ${abstimmung.optionen}">
+							<label class="option-auswahl">
+								<input type="radio" th:name="'option-' + ${abstimmung.id}" th:value="${option}">
+								<span th:text="${option}">Option</span>
+							</label>
+						</li>
 					</ul>
-				</div>
+				</fieldset>
 			</li>
 		</ul>
 	</main>

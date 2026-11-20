@@ -564,3 +564,33 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 3. **Verifikation:**
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **254/254 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
 
+---
+
+## Interaktion 19
+
+### Benutzeranfrage
+> sieht gut aus. die antwortoptionen möchte ich untereinander angeordnet bekommen. die sollen nicht in form von buttons, sondern mit radio-buttons umgesetzt sein. bitte nicht gleich committen. ich möchte das erst ansehen
+
+### Umsetzung
+1. **Template ([index.html](../src/main/resources/templates/index.html)):**
+   - Antwortoptionen als semantisches `<fieldset class="optionen-bereich">` mit `<legend class="meta-label">Antwortoptionen</legend>` strukturiert.
+   - Jede Option wird als `<label class="option-auswahl">` mit nativem `<input type="radio" th:name="'option-' + ${abstimmung.id}" th:value="${option}">` dargestellt, sodass die Auswahl eindeutig pro Abstimmung gruppiert ist.
+2. **Styling ([style.css](../src/main/resources/static/css/style.css)):**
+   - `.optionen-liste` auf vertikale Anordnung (`flex-direction: column`) umgestellt.
+   - Button-/Pill-Rahmen entfernt; stattdessen ruhige Radio-Zeilen (`.option-auswahl`) mit `accent-color: var(--farbe-primar)` und dezenter Hover-Hervorhebung.
+3. **Verifikation & Status:**
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check test`: **254/254 Tests bestanden**, **0 Checkstyle violations**.
+   - Änderungen wunschgemäß noch nicht committet (zur vorherigen Ansicht durch den Benutzer).
+
+---
+
+## Interaktion 20
+
+### Benutzeranfrage
+> du darfst die änderungen committen.
+
+### Umsetzung
+- Die Änderungen aus Interaktion 19 ([index.html](../src/main/resources/templates/index.html), [style.css](../src/main/resources/static/css/style.css)) sowie die Aktualisierung des Interaktionslogs wurden in einem eigenen Commit auf Branch `abgabe_05_4` gesichert (`Übung 5.4: Antwortoptionen vertikal als Radio-Buttons dargestellt`).
+
+
+

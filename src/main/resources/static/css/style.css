@@ -245,12 +245,17 @@ a:hover {
 }
 
 .optionen-bereich {
+	margin: 0;
+	padding: 0;
+	border: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 0.45rem;
 }
 
 .optionen-bereich .meta-label {
+	padding: 0;
+	margin-bottom: 0.2rem;
 	font-size: 0.85rem;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
@@ -262,17 +267,38 @@ a:hover {
 	margin: 0;
 	padding: 0;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
+	flex-direction: column;
+	gap: 0.35rem;
 }
 
 .option-eintrag {
-	background-color: var(--farbe-flaeche-dezent);
-	border: 1px solid var(--farbe-rahmen);
+	margin: 0;
+	padding: 0;
+}
+
+.option-auswahl {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 0.35rem 0.5rem;
 	border-radius: var(--radius-klein);
-	padding: 0.35rem 0.75rem;
-	font-size: 0.92rem;
+	font-size: 0.95rem;
 	color: var(--farbe-text);
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.option-auswahl:hover {
+	background-color: var(--farbe-flaeche-dezent);
+}
+
+.option-auswahl input[type="radio"] {
+	margin: 0;
+	width: 1.05rem;
+	height: 1.05rem;
+	flex-shrink: 0;
+	accent-color: var(--farbe-primar);
+	cursor: pointer;
 }
 
 /* ---------- Schaltflächen ---------- */
