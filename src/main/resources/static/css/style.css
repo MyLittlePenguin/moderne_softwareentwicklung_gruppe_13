@@ -301,6 +301,22 @@ a:hover {
 	cursor: pointer;
 }
 
+.option-auswahl-inaktiv,
+.option-auswahl:has(input[type="radio"]:disabled) {
+	color: var(--farbe-text-sekundaer);
+	cursor: default;
+}
+
+.option-auswahl-inaktiv:hover,
+.option-auswahl:has(input[type="radio"]:disabled):hover {
+	background-color: transparent;
+}
+
+.option-auswahl input[type="radio"]:disabled {
+	cursor: default;
+	opacity: 0.6;
+}
+
 /* ---------- Schaltflächen ---------- */
 
 .schaltflaeche,
@@ -402,6 +418,7 @@ button[disabled] {
 
 .formular-feld input[type="text"],
 .formular-feld input[type="password"],
+.formular-feld input[type="datetime-local"],
 .formular-feld textarea,
 .option-zeile input[type="text"] {
 	width: 100%;
@@ -414,6 +431,33 @@ button[disabled] {
 	border-radius: var(--radius-klein);
 	padding: 0.55rem 0.75rem;
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.datum-picker-zeile {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	margin-top: 0.25rem;
+}
+
+.formular-feld .datum-picker-label {
+	font-size: 0.8rem;
+	font-weight: 400;
+	color: var(--farbe-text-sekundaer);
+}
+
+.formular-feld .datum-picker {
+	font-size: 0.88rem;
+	font-variant-numeric: tabular-nums;
+	padding: 0.4rem 0.65rem;
+	background-color: var(--farbe-flaeche-dezent);
+	border-color: var(--farbe-rahmen);
+	color: var(--farbe-text-sekundaer);
+}
+
+.formular-feld .datum-picker:focus {
+	background-color: var(--farbe-flaeche);
+	color: var(--farbe-text);
 }
 
 .formular-feld textarea {

@@ -54,8 +54,8 @@
 					<legend class="meta-label">Antwortoptionen</legend>
 					<ul class="optionen-liste">
 						<li class="option-eintrag" th:each="option : ${abstimmung.optionen}">
-							<label class="option-auswahl">
-								<input type="radio" th:name="'option-' + ${abstimmung.id}" th:value="${option}">
+							<label class="option-auswahl option-auswahl-inaktiv">
+								<input type="radio" th:name="'option-' + ${abstimmung.id}" th:value="${option}" disabled>
 								<span th:text="${option}">Option</span>
 							</label>
 						</li>

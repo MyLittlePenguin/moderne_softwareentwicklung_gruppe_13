@@ -6,6 +6,7 @@
 	<title th:text="${title}">Neue Abstimmung – Votee</title>
 	<link rel="stylesheet" href="/css/style.css">
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
+	<script src="/js/datum-picker.js" defer></script>
 </head>
 <body th:attr="'hx-headers:inherited'=${csrfHeadersJson}">
 	<header class="kopfzeile">
@@ -48,10 +49,18 @@
 						<div class="formular-feld">
 							<label for="beginn">Beginn (TT.MM.JJJJ HH:MM)</label>
 							<input id="beginn" name="beginn" type="text" placeholder="01.03.2027 09:00" required th:value="${beginn}">
+							<div class="datum-picker-zeile">
+								<label class="datum-picker-label" for="beginn-picker">oder über Kalender wählen:</label>
+								<input id="beginn-picker" class="datum-picker" type="datetime-local" data-datum-ziel="beginn">
+							</div>
 						</div>
 						<div class="formular-feld">
 							<label for="ende">Ende / Frist (TT.MM.JJJJ HH:MM)</label>
 							<input id="ende" name="ende" type="text" placeholder="15.03.2027 18:00" required th:value="${ende}">
+							<div class="datum-picker-zeile">
+								<label class="datum-picker-label" for="ende-picker">oder über Kalender wählen:</label>
+								<input id="ende-picker" class="datum-picker" type="datetime-local" data-datum-ziel="ende">
+							</div>
 						</div>
 					</div>
 					<fieldset class="optionen-gruppe">

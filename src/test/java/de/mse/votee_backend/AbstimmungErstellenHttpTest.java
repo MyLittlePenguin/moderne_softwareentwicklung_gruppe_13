@@ -185,6 +185,10 @@ class AbstimmungErstellenHttpTest {
             String html = formResponse.as(String.class);
             assertThat(html, containsString("hx-post=\"/abstimmungen\""));
             assertThat(html, containsString("hx-headers:inherited"));
+            assertThat(html, containsString("type=\"datetime-local\""));
+            assertThat(html, containsString("data-datum-ziel=\"beginn\""));
+            assertThat(html, containsString("data-datum-ziel=\"ende\""));
+            assertThat(html, containsString("src=\"/js/datum-picker.js\""));
             csrf = extrahiereCsrf(html);
         }
 
@@ -216,6 +220,8 @@ class AbstimmungErstellenHttpTest {
             assertThat(html, containsString("Neubau Bibliothek"));
             assertThat(html, containsString("Dafür"));
             assertThat(html, containsString("Enthaltung"));
+            assertThat(html, containsString("type=\"radio\""));
+            assertThat(html, containsString("disabled"));
         }
     }
 

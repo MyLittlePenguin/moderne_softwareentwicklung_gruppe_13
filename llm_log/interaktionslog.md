@@ -592,5 +592,29 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
 ### Umsetzung
 - Die Änderungen aus Interaktion 19 ([index.html](../src/main/resources/templates/index.html), [style.css](../src/main/resources/static/css/style.css)) sowie die Aktualisierung des Interaktionslogs wurden in einem eigenen Commit auf Branch `abgabe_05_4` gesichert (`Übung 5.4: Antwortoptionen vertikal als Radio-Buttons dargestellt`).
 
+---
+
+## Interaktion 21
+
+### Benutzeranfrage
+> momentan kann noch nicht abgestimmt werden. disable entsprechend die radio-buttons.
+>
+> die datums-felder im formular zum anlegen neuer abstimmungen sollen um date-time-picker ergänzt werden, damit man bei bedarf auch darüber ein datum auswählen kann
+
+### Umsetzung
+1. **Deaktivierte Radio-Buttons auf der Startseite:**
+   - [index.html](../src/main/resources/templates/index.html): Radio-Buttons der Antwortoptionen mit `disabled` und Klasse `.option-auswahl-inaktiv` versehen.
+   - [style.css](../src/main/resources/static/css/style.css): Deaktivierte Auswahlzeilen ruhig dargestellt (`cursor: default`, kein irreführender Hover-Effekt, dezente Text- und Kontrollfarben).
+2. **Ergänzende Date-Time-Picker im Erstellungsformular:**
+   - [abstimmung-neu.html](../src/main/resources/templates/abstimmung-neu.html): Neben/unter den bestehenden Textfeldern (`TT.MM.JJJJ HH:MM`) jeweils ein nativer `<input type="datetime-local">` (`beginn-picker`, `ende-picker` mit `data-datum-ziel`, ohne `name`-Attribut) ergänzt und `/js/datum-picker.js` eingebunden.
+   - [datum-picker.js](../src/main/resources/static/js/datum-picker.js): Schlankes, ereignisdelegiertes Skript zur bidirektionalen Synchronisierung zwischen `datetime-local` (`YYYY-MM-DDTHH:MM`) und dem deutschen Eingabeformat (`TT.MM.JJJJ HH:MM`) – inklusive automatischer Neusynchronisierung nach htmx-4-Swaps (`422`-Validierungsfehler).
+   - [StatischeDateienService.java](../src/main/java/de/mse/votee_backend/StatischeDateienService.java): Route `GET /js/datum-picker.js` (`text/javascript; charset=UTF-8`) ergänzt.
+   - [style.css](../src/main/resources/static/css/style.css): Passende, unaufdringliche Gestaltung für `.datum-picker-zeile`, `.datum-picker-label` und `.datum-picker`.
+3. **Tests & Verifikation:**
+   - [MainTest.java](../src/test/java/de/mse/votee_backend/MainTest.java): Test `datumPickerScriptIsServed()` für `GET /js/datum-picker.js` ergänzt.
+   - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Prüfungen für `datetime-local`-Picker, `/js/datum-picker.js` und deaktivierte Radio-Buttons ergänzt.
+   - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **255/255 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
+
+
 
 

@@ -17,23 +17,35 @@ import io.helidon.webserver.http.ServerResponse;
 class StatischeDateienService implements HttpService {
 
     private static final String STYLE_RESSOURCE = "/static/css/style.css";
+    private static final String DATUM_PICKER_RESSOURCE = "/static/js/datum-picker.js";
 
     private final String stylesheet;
+    private final String datumPickerSkript;
 
     StatischeDateienService() {
         this.stylesheet = ladeRessource(STYLE_RESSOURCE);
+        this.datumPickerSkript = ladeRessource(DATUM_PICKER_RESSOURCE);
     }
 
     @Override
     public void routing(HttpRules rules) {
-        rules.get("/css/style.css", this::styleCss);
+        rules.get("/css/style.css", this::styleCss)
+                .get("/js/datum-picker.js", this::datumPickerJs);
     }
 
     private void styleCss(ServerRequest request, ServerResponse response) {
+        sendeStatisch(response, "text/css; charset=UTF-8", stylesheet);
+    }
+
+    private void datumPickerJs(ServerRequest request, ServerResponse response) {
+        sendeStatisch(response, "text/javascript; charset=UTF-8", datumPickerSkript);
+    }
+
+    private static void sendeStatisch(ServerResponse response, String contentType, String inhalt) {
         response.status(Status.OK_200);
-        response.header(HeaderNames.CONTENT_TYPE, "text/css; charset=UTF-8");
+        response.header(HeaderNames.CONTENT_TYPE, contentType);
         response.header(HeaderNames.CACHE_CONTROL, "no-cache");
-        response.send(stylesheet);
+        response.send(inhalt);
     }
 
     private static String ladeRessource(String pfad) {
