@@ -9,7 +9,7 @@
 - **Webserver & Routing:** Helidon SE 27 (`Main`, `PageService`, `AuthHttpService`, `AbstimmungHttpService`, `StatischeDateienService`)
 - **UI:** [Thymeleaf](https://www.thymeleaf.org) (`src/main/resources/templates/`) + **htmx 4** + eigenes CSS-Stylesheet (`src/main/resources/static/css/style.css`)
 - **Datenbank:** H2 über den Helidon DB Client (JDBC + HikariCP), Schema in `src/main/resources/schema.sql` (automatische, idempotente Initialisierung beim Start über `DatenbankInitialisierung`)
-- **Qualitätssicherung:** JUnit 5, Helidon `@ServerTest`, Checkstyle (`checkstyle.xml`)
+- **Qualitätssicherung & Metriken:** JUnit 5, Helidon `@ServerTest`, Checkstyle (`checkstyle.xml`), JaCoCo 0.8.16, PMD/CPD 7.29 (`pmd-ruleset.xml`) sowie das lokale Auswertungsskript `scripts/check-metrics.sh`
 
 ## Funktionsumfang (aktueller Stand)
 
@@ -37,6 +37,12 @@ Voraussetzung ist **Java 27** (empfohlen über den Maven Wrapper `./mvnw`):
 
 ```bash
 ./mvnw checkstyle:check verify
+```
+
+Für eine lokale Metrik- und Coverage-Auswertung (JaCoCo, PMD/CPD, Checkstyle inkl. Bericht unter `target/metrics-report.md`):
+
+```bash
+./scripts/check-metrics.sh
 ```
 
 ## Projekt starten
@@ -89,5 +95,10 @@ Die Testsuite in `src/test/java/de/mse/votee_backend/` umfasst aktuell 255 Tests
 
 ## Weitere Dokumentation
 
-- `doc/`: Übungsunterlagen, Entwürfe und DDD-Review (`doc/DDD_Review.md`)
+- `doc/`: Übungsunterlagen (`1_Loesung.md`, `3_Uebung.md`, `4_Uebung.md`, `5_Uebung.md`), LLM-Protokolle (`*_LLM_Prompt_und_Antwort.md`) und DDD-Review (`doc/DDD_Review.md`)
 - `llm_log/interaktionslog.md`: Protokoll der Entwicklungsinteraktionen
+- `llm_log/interaktionen_wiederhergestellt.md`: Vollständig wiederhergestellte Prompts und Antworten aus den Antigravity-Sessions zu Übung 5.4
+
+## Hinweis zur Erstellung
+
+Diese `README.md` wurde teilweise LLM-gestützt von **Google Antigravity (Gemini 4 Neon)** generiert und anhand des aktuellen Projektstands aktualisiert.
