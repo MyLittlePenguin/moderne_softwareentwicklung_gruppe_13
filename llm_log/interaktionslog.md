@@ -651,8 +651,34 @@ Vor Beginn der Implementierung existierten in `src/test/java/de/mse/votee_backen
    - [AbstimmungErstellenHttpTest.java](../src/test/java/de/mse/votee_backend/AbstimmungErstellenHttpTest.java): Neuen HTTP-Integrationstest `startseiteSortiertAbstimmungenNachEnddatum()` ergänzt.
    - `./mvnw -o -Daether.syncContext.named.factory=noop checkstyle:check verify`: **255/255 Tests bestanden**, **0 Checkstyle violations**, **BUILD SUCCESS**.
 
+---
 
+## Interaktion 24 (Übung 5, Metrik-Setup vom 18.11.2026, aus Branch abgabe_05 übernommen)
 
+### Benutzeranfrage
+> create scripts to run sonarcube locally and check this project
+> i don't want to use a token for sonarqube
+> hast du eine lokale alternative für sonarcube, mit der ich code metriken für dieses projekt generieren kann?
+> ja erstelle ein auswertungsskript mit JaCoCo und PMD/CPD
 
+### Umsetzung
+1. **Ausgangslage & Entscheidung für eine rein lokale Lösung ohne Server/Token:**
+   - Zunächst wurden Start-/Prüfskripte für einen lokalen SonarQube-Community-Container entworfen.
+   - Da SonarQube Community Build (`26.11`) beim Scanner-Lauf für `/api/plugins/installed` zwingend eine Authentifizierung bzw. ein Token voraussetzt, wurde auf Wunsch nach einer server- und tokenlosen lokalen Alternative auf **JaCoCo + PMD/CPD + Checkstyle + lokales Auswertungsskript** umgestellt.
 
+2. **Maven-Konfiguration ([pom.xml](../pom.xml) & [pmd-ruleset.xml](../pmd-ruleset.xml)):**
+   - **JaCoCo (`jacoco-maven-plugin` `0.8.16`):** Unterstützt Java 27 offiziell (`ASM 9.11.1`). Konfiguriert mit `prepare-agent` und `report` (Phase `test`), sodass bei jedem Testlauf `target/site/jacoco/jacoco.xml`, `jacoco.csv` und der HTML-Report erzeugt werden.
+   - **PMD & CPD (`maven-pmd-plugin` `3.28.0` mit PMD `7.29.0`):** Unterstützt Java 27 (`<targetJdk>27</targetJdk>`). Eigenes Regelsatz-Profil in [pmd-ruleset.xml](../pmd-ruleset.xml) für:
+     - Best Practices, Error Prone, Multithreading, Performance
+     - Design- & Komplexitätsmetriken (`CyclomaticComplexity`, `CognitiveComplexity`, `ExcessiveParameterList`, `TooManyMethods`)
+     - Copy-Paste-Detector (`cpd` ab 30 Tokens)
 
+3. **Lokales Auswertungsskript ([scripts/check-metrics.sh](../scripts/check-metrics.sh)):**
+   - Führt `./mvnw test jacoco:report pmd:pmd pmd:cpd checkstyle:check` aus (oder wertet mit `--report-only` bestehende Reports direkt aus).
+   - Analysiert die Java-Quelldateien unter `src/main/java/` sowie die XML-Reports (`jacoco.xml`, `pmd.xml`, `cpd.xml`, `checkstyle-result.xml`) und generiert eine Markdown-Gesamtübersicht im Terminal sowie unter `target/metrics-report.md`:
+     - **Aufgabe 1 (Gesamt- & Dateimetriken):** NCLOC (346), Kommentarzeilen (163), Kommentaranteil (32,0 %), Klassen (11), Methoden (46), Cyclomatic Complexity (87 gesamt, Ø 1,89 pro Methode), max. Parameteranzahl pro Datei.
+     - **Aufgabe 2 (Code Coverage):** Line Coverage (93,7 %), Branch Coverage (95,1 %), Method Coverage (95,7 %), inklusive exakter Angabe nicht abgedeckter Zeilen und teilweise abgedeckter Branches pro Datei.
+     - **Aufgabe 3 (Technical Debt & Regelverletzungen):** 8 PMD-Meldungen, 0 CPD-Duplikate, 0 Checkstyle-Verstöße.
+
+4. **Verifikation:**
+   - `./scripts/check-metrics.sh`: 190/190 Tests bestanden, alle Berichte erfolgreich generiert.

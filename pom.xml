@@ -18,6 +18,9 @@
 		<version.lib.thymeleaf>3.1.7.RELEASE</version.lib.thymeleaf>
 		<version.plugin.checkstyle>3.6.0</version.plugin.checkstyle>
 		<version.lib.checkstyle>14.4.0</version.lib.checkstyle>
+		<version.plugin.jacoco>0.8.16</version.plugin.jacoco>
+		<version.plugin.pmd>3.28.0</version.plugin.pmd>
+		<version.lib.pmd>7.29.0</version.lib.pmd>
 	</properties>
 
 	<dependencies>
@@ -117,6 +120,65 @@
 						<id>copy-libs</id>
 					</execution>
 				</executions>
+			</plugin>
+			<!-- Code Coverage & Bytecode-Komplexität: ./mvnw test jacoco:report -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${version.plugin.jacoco}</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Statische Codeanalyse & Duplikate: ./mvnw pmd:pmd pmd:cpd -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>${version.plugin.pmd}</version>
+				<dependencies>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-core</artifactId>
+						<version>${version.lib.pmd}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-java</artifactId>
+						<version>${version.lib.pmd}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-javascript</artifactId>
+						<version>${version.lib.pmd}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-jsp</artifactId>
+						<version>${version.lib.pmd}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetJdk>27</targetJdk>
+					<rulesets>
+						<ruleset>pmd-ruleset.xml</ruleset>
+					</rulesets>
+					<linkXRef>false</linkXRef>
+					<minimumTokens>30</minimumTokens>
+					<failOnViolation>false</failOnViolation>
+					<printFailingErrors>true</printFailingErrors>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="votee PMD Ruleset"
+	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+	<description>
+		PMD-Regelsatz für Codequalität, Komplexitätsmetriken und Technical-Debt-Analyse (Übung 5).
+	</description>
+
+	<!-- Best Practices -->
+	<rule ref="category/java/bestpractices.xml">
+		<exclude name="GuardLogStatement"/>
+	</rule>
+
+	<!-- Error Prone (typische Fehlerquellen) -->
+	<rule ref="category/java/errorprone.xml">
+		<exclude name="AvoidLiteralsInIfCondition"/>
+		<exclude name="AvoidDuplicateLiterals"/>
+	</rule>
+
+	<!-- Design & Softwaremetriken -->
+	<rule ref="category/java/design.xml">
+		<exclude name="LawOfDemeter"/>
+		<exclude name="LoosePackageCoupling"/>
+		<exclude name="DataClass"/>
+	</rule>
+
+	<!-- Schwellenwerte für Design- und Komplexitätsmetriken -->
+	<rule ref="category/java/design.xml/CyclomaticComplexity">
+		<properties>
+			<property name="classReportLevel" value="30"/>
+			<property name="methodReportLevel" value="10"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml/CognitiveComplexity">
+		<properties>
+			<property name="reportLevel" value="15"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml/ExcessiveParameterList">
+		<properties>
+			<property name="minimum" value="6"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml/TooManyMethods">
+		<properties>
+			<property name="maxmethods" value="20"/>
+		</properties>
+	</rule>
+
+	<!-- Multithreading & Performance -->
+	<rule ref="category/java/multithreading.xml">
+		<exclude name="UseConcurrentHashMap"/>
+	</rule>
+	<rule ref="category/java/performance.xml"/>
+
+</ruleset>

@@ -199,9 +199,56 @@ wir jede Behauptung gegen den Code geprüft haben. Nach allen Schritten laufen 1
 
 <!-- Modularität, Bounded Contexts, CI-Pipeline inkl. Tests (ca. 8–10 Sätze) -->
 
+Bearbeitung: Hassan
+
+**(a) Modularität und Testbarkeit.** Jeder Bounded Context aus Übung 3 bekommt einen eigenen Paketbaum unter
+`de.mse.votee_backend`; umgesetzt ist bisher nur der Startpunkt `abstimmungsverwaltung` mit den Schichten
+`domain.model` (Aggregate Root `Abstimmung`, Value Objects, fachliche Exception) und `application`
+(`AbstimmungEingabeValidator`). Die Abhängigkeiten zeigen nur nach innen: `application` nutzt `domain.model`
+(z. B. delegiert der Validator an das Value Object `Titel`), die Domäne importiert ausschließlich Klassen aus
+`java.*` und kennt weder Helidon noch die Datenbank. Dadurch lässt sich die gesamte Fachlogik mit reinen
+JUnit-5-Tests ohne Server, Mocks oder Datenbank prüfen; die Testpakete spiegeln die Paketstruktur des Codes.
+Die anderen Contexts (Kontoverwaltung, Stimmabgabe, Abstimmungsansicht) sollen nur über IDs wie `AbstimmungId`
+und `NutzerId` verbunden werden. Offen gegenüber der Strategie aus Übung 3 sind noch das Repository-Interface
+`AbstimmungRepository` und die `infrastructure`-Schicht (H2 als dateibasierte Datenbank), die als nächster Schritt
+folgen.
+
+**(b) CI-Pipeline.** Die GitHub-Actions-Pipeline aus Übung 2 (`.github/workflows/maven.yml`) läuft bei jedem Push
+auf `main` und bei jedem Pull Request: Sie richtet JDK 27 (Temurin) ein, prüft zuerst den Code-Stil mit
+`./mvnw -B checkstyle:check` und führt dann mit `./mvnw -B verify` Kompilierung, alle Tests und das Paketieren aus.
+Die in Aufgabe 2 bis 4 geschriebenen Tests laufen damit automatisch mit, ohne dass die Pipeline angepasst werden
+musste, weil Maven Surefire alle Testklassen unter `src/test/java` findet. Schlägt ein Test fehl, wird der PR rot
+markiert; das haben wir in Aufgabe 2 bewusst genutzt (TDD-Rot im Draft-PR #13, bis die Implementierung aus
+Aufgabe 3 vorlag). Die Testberichte werden immer als Artefakt hochgeladen, auch bei Fehlern, damit man die
+Ursache nachlesen kann.
+
 ## 6. Kritische Reflexion zu TDD, DDD und LLM-gestützter Entwicklung
 
 <!-- Chancen und Risiken (ca. 10–15 Sätze) -->
+
+### Reflexion Hassan
+
+TDD hat mich gezwungen, die Fachregeln zu klären, bevor eine Zeile Code existierte: Erst beim Schreiben der Tests
+mussten wir festlegen, welche Zeichen ein Titel enthalten darf, welche Jahre gültig sind und wie zerlegte Umlaute
+behandelt werden. Dass der Draft-PR in der CI so lange rot blieb, bis die Implementierung aus Aufgabe 3 vorlag, hat
+für mich sichtbar gemacht, dass „erst Test, dann Code“ tatsächlich funktioniert. DDD hat uns eine gemeinsame Sprache
+gegeben, etwa `Titel` als Value Object und die Fachregeln in der Aggregate Root `Abstimmung` statt in einem Service.
+Schwierig war, dass das Teammodell und mein eigenes Modell aus Übung 3 auseinanderlagen und wir uns erst auf eine
+gemeinsame Basis einigen mussten. Die LLMs haben meinen Prozess beschleunigt, weil sie in kurzer Zeit viele
+Testideen, Regex-Entwürfe und Reviews liefern; der Großteil meiner Zeit ging dafür aber in das Prüfen dieser
+Vorschläge. Dabei habe ich deutliche Grenzen erlebt: Das LLM hat bereits vorhandene Tests übersehen, Aussagen über
+Code getroffen, den es gar nicht gesehen hatte, und „Verbesserungen“ vorgeschlagen, die schlechter waren als unser
+Code. Ein weiteres Risiko betrifft die Arbeit in einer Firma: Gute Antworten bekommt man nur mit viel Kontext, also
+mit eigenem Code und der Projektstruktur. Damit verlassen aber vertrauliche Firmeninformationen das Haus, und sobald
+Testdaten oder Logs echte Personendaten enthalten, ist auch der Datenschutz nach DSGVO betroffen. Weniger Kontext
+schützt die Daten, verschlechtert aber genau die Antworten, wie unsere Erfahrungen zeigen; Abhilfe schaffen nur
+Firmenlizenzen ohne Training auf den Eingaben, lokal betriebene Modelle oder bewusst minimierte Ausschnitte. Damit
+ich den Code verstehe und nicht nur kopiere, habe ich jeden Vorschlag gegen den Code und die Tests geprüft und in
+Bewertungstabellen mit Begründung festgehalten, ob ich ihn übernehme oder ablehne. Gut eignen sich LLMs aus meiner
+Sicht für Testideen, Edge Cases, Regex-Entwürfe und Erklärungen. Schlecht geeignet sind sie für fachliche
+Entscheidungen, etwa ob eine Stimme genau zum Fristende noch zählt, und für alles, wofür man den Zusammenhang des
+ganzen Projekts kennen muss. Mein Fazit: Das LLM ist ein schneller Ideengeber, die Verantwortung für den Code bleibt
+aber bei mir.
 
 ### Erfahrungsbericht Ronny (aus Aufgabe 3 hierher verschoben)
 
