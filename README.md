@@ -97,7 +97,7 @@ Die Testsuite in `src/test/java/de/mse/votee_backend/` umfasst aktuell 255 Tests
 
 - `doc/`: Übungsunterlagen (`1_Loesung.md`, `3_Uebung.md`, `4_Uebung.md`, `5_Uebung.md`), LLM-Protokolle (`*_LLM_Prompt_und_Antwort.md`) und DDD-Review (`doc/DDD_Review.md`)
 - `llm_log/interaktionslog.md`: Protokoll der Entwicklungsinteraktionen
-- `llm_log/interaktionen_wiederhergestellt.md`: Vollständig wiederhergestellte Prompts und Antworten aus den Antigravity-Sessions zu Übung 5.4
+- `llm_log/interaktionen_wiederhergestellt.md`: Nachträglich vom LLM rekonstruierte Prompts und Antworten aus den Antigravity-Sessions zu Übung 5.4 (Vollständigkeit nicht garantiert)
 
 ## Hinweis zur Erstellung
 

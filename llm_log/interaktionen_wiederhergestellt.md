@@ -1,10 +1,12 @@
 # Wiederhergestellte LLM-Interaktionen und Antworten – Übung 5.4
 
-Dieses Dokument enthält die vollständig und ungekürzt wiederhergestellten Prompts und Antworten aus den beiden Antigravity-CLI-Sessions zu **Übung 5.4 (Frontend-Entwicklung und Erweiterung der Anwendung)** am 19.11.2026 und 20.11.2026.
+> **Hinweis:** Die Sessions wurden nicht live mitgeschrieben. Prompts und Antworten wurden nachträglich vom LLM aus dem Session-Verlauf rekonstruiert. Wortlaut und Vollständigkeit können nicht garantiert werden.
+
+Dieses Dokument enthält die nachträglich vom LLM rekonstruierten Prompts und Antworten aus den beiden Antigravity-CLI-Sessions zu **Übung 5.4 (Frontend-Entwicklung und Erweiterung der Anwendung)** am 19.11.2026 und 20.11.2026.
 
 - **Tool / Modell:** Google Antigravity CLI, Default-Modell (Gemini 4 Neon)
 - **Zeitraum:** 19.11.2026 (21:09–22:09 Uhr) und 20.11.2026 (15:51–16:31 Uhr)
-- **Umfang:** 2 Sessions, 16 Interaktionen (alle Prompts und Antworten im Originalwortlaut)
+- **Umfang:** 2 Sessions, 16 Interaktionen (vom LLM rekonstruiert, Vollständigkeit nicht garantiert)
 
 ## Inhaltsübersicht
 
