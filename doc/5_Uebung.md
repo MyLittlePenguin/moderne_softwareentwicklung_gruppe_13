@@ -1,6 +1,6 @@
 # Übung 5: Software- und Architekturmetriken für Codequalität und Architekturoptimierung
 
-Bearbeitung: Hassan
+Bearbeitung: Hassan (Aufgaben 1–3 und 5), Ronny (Aufgabe 4)
 
 **Gegenstand:** Code aus Übung 4 auf `main` (Stand `e53be0c`, 18.11.2026): Context Abstimmungsverwaltung,
 Aggregate Root `Abstimmung` und `AbstimmungEingabeValidator`.
@@ -209,7 +209,41 @@ hinschauen sollte, die Bewertung braucht aber fachliches Verständnis.
 
 ## 4. Frontend-Entwicklung und Erweiterung der Anwendung
 
-**LLM-Einsatz:**
+**Bearbeitung:** Ronny
+
+**LLM-Einsatz:** Hierfür habe ich Antigravity von Google mit dem Default-Model
+(Gemini 4 Neon) genutzt. Ich habe mir, weil mein Kontingent nicht ausgereicht
+hat jetzt doch ein Abo für dieses Modul abgeschlossen.
+
+Meine LLM Interaktionen befinden sich grundsätzlich in dem LLM-Log-Verzeichnis.
+Leider hab ich die für diese Aufgabe vergessen aufzeichnen zu lassen. Ich habe
+versucht, diese vom LLM wiederherstellen zu lassen, kann aber nicht garantieren, 
+dass das vollständig gelungen ist.
+
+Grundsätzlich hat die Bearbeitung auch relativ gut funktioniert. Einige Male
+musste ich nacharbeiten lassen, da das Ergebnis nicht ganz meinen Vorstellungen
+entsprochen hat, das waren allerdings Kleinigkeiten, die relativ schnell
+erledigt worden sind. 
+
+Der UI-Vorschlag vom LLM hatte mir ganz gut gefallen. Ich habe auch hier nur
+wenige Anpassungen vornehmen lassen. Der Ablauf kann gut anhand der Commits
+nachverfolgt werden, da nach jedem LLM-Prompt ein Commit durchgeführt worden
+ist.
+
+**Ergebnis im Überblick (Ergänzung Hassan, Angaben aus `README.md` und Code):**
+
+- **Funktionen der UI:** Die Startseite (`GET /`) zeigt alle Abstimmungen, sortiert nach Enddatum; die
+  Radiobuttons sind noch deaktiviert, weil die Stimmabgabe selbst noch nicht umgesetzt ist. Die Anmeldung
+  läuft über Passwort (PBKDF2-Hash) und einen fünfstelligen 2FA-Code (vorerst fest `00000`), die Sitzung über ein
+  HttpOnly-Cookie; Abmelden und Anlegen sind gegen CSRF geschützt. Nur Administratoren dürfen Abstimmungen anlegen (sonst 401 bzw. 403); das Formular hat
+  Datums-/Zeitfelder, dynamisch erweiterbare Optionsfelder und zeigt Validierungsfehler per htmx als Teilseite (422).
+- **Tests der UI:** `AbstimmungErstellenHttpTest` testet über echte HTTP-Requests (Helidon `@ServerTest`) Login mit
+  2FA, Cookies, CSRF, 401/403, die 422-Fragmente, das Anlegen einer Abstimmung inklusive Sortierung und den Logout.
+  `TemplatesTest` prüft das Rendern der Thymeleaf-Templates.
+- **Abweichung vom Übungsblatt:** Laut Hinweis auf dem Übungsblatt sollten wir weiter mit einem In-Memory-Repository arbeiten. Wir
+  speichern stattdessen in H2 als dateibasierter Datenbank (`jdbc:h2:file:./data/votee`),
+  damit angelegte Abstimmungen einen Neustart überstehen. Die Tests nutzen eine eigene H2-In-Memory-Datenbank
+  (`src/test/resources/application.yaml`) und laufen dadurch isoliert.
 
 ## 5. Reflexion zum Einsatz von Metriken und LLM
 

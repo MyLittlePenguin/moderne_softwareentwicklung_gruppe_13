@@ -2,6 +2,8 @@
 
 ## 1. Review der Implementierungsstrategie
 
+**Bearbeitung:** Timo Kramer
+
 **Gegenstand:** Implementierungsstrategie, Domänenmodell, Services und Bounded Contexts aus
 [3_Uebung.md](3_Uebung.md).
 

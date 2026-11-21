@@ -1,5 +1,7 @@
 ## Event Storming
 
+**Bearbeitung:** Gemeinsam erstellt. In Mermaid übertragen durch Timo.
+
 ```mermaid
 flowchart LR
     subgraph board ["Board: Domain Events"]
@@ -65,6 +67,8 @@ flowchart LR
 ```
 
 ## Domainmodel
+
+**Bearbeiter:** Ronny 
 
 ```mermaid
 classDiagram
@@ -136,6 +140,8 @@ classDiagram
 
 ## Bounded Contexts
 
+**Bearbeiter:** Timo
+
 ```mermaid
 flowchart LR
     subgraph kontoverwaltung ["Kontoverwaltung"]
@@ -174,6 +180,8 @@ flowchart LR
 ```
 
 ## Domain Services und Repositories
+
+**Bearbeiter:** Ronny
 
 ### Services
 
@@ -229,6 +237,8 @@ flowchart LR
 
 # Implementationsstrategie
 
+**Bearbeiter:** Gemeinsam besprochen. Niedergeschrieben durch Timo.
+
 ## Vorgehen
 
 1. Reihenfolge der Events: 
@@ -254,6 +264,8 @@ flowchart LR
    wir bei Bedarf mit einem In-Memory-Repository.
 
 ## Paketstruktur
+
+**Bearbeiter:** Ronny
 
 ```
 de.mse.votee_backend
