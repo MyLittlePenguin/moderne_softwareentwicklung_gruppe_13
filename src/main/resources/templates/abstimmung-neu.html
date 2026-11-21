@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:text="${title}">Neue Abstimmung – Votee</title>
+	<link rel="stylesheet" href="/css/style.css">
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4/dist/htmx.min.js" defer></script>
+</head>
+<body th:attr="'hx-headers:inherited'=${csrfHeadersJson}">
+	<header class="kopfzeile">
+		<div class="kopfzeile-inhalt">
+			<div class="marke">
+				<a class="marke-link" href="/"><span class="marke-name">Votee</span></a>
+				<span class="marke-untertitel">Abstimmungsportal</span>
+			</div>
+			<nav class="hauptnavigation" aria-label="Hauptnavigation">
+				<div class="nav-gruppe">
+					<span class="nutzer-hinweis" th:if="${session != null}">
+						Angemeldet als <strong th:text="${session.benutzername}">Nutzer</strong>
+					</span>
+					<a class="schaltflaeche schaltflaeche-sekundaer" href="/">Zur Übersicht</a>
+				</div>
+			</nav>
+		</div>
+	</header>
+
+	<main class="seite seite-formular">
+		<section class="karte formular-karte">
+			<h1 class="formular-titel">Neue Abstimmung erstellen</h1>
+			<p class="formular-einleitung">Legen Sie Titel, Zeitraum und mindestens zwei Antwortoptionen für die neue Abstimmung fest.</p>
+			<div id="abstimmung-formular-container" th:fragment="abstimmung-formular">
+				<p role="alert" class="fehler" th:if="${fehler != null}" th:text="${fehler}">Fehlermeldung</p>
+				<form class="formular" action="/abstimmungen" method="post"
+				      hx-post="/abstimmungen"
+				      hx-target="#abstimmung-formular-container"
+				      hx-swap="outerHTML">
+					<input type="hidden" name="_csrf" th:value="${csrfToken}">
+					<div class="formular-feld">
+						<label for="titel">Titel (3–100 Zeichen)</label>
+						<input id="titel" name="titel" type="text" minlength="3" maxlength="100" required th:value="${titel}">
+					</div>
+					<div class="formular-feld">
+						<label for="beschreibung">Beschreibung (optional)</label>
+						<textarea id="beschreibung" name="beschreibung" rows="3" th:text="${beschreibung}"></textarea>
+					</div>
+					<div class="formular-zeile">
+						<div class="formular-feld">
+							<label for="beginn">Beginn</label>
+							<input id="beginn" name="beginn" type="datetime-local" required th:value="${beginn}">
+						</div>
+						<div class="formular-feld">
+							<label for="ende">Ende / Frist</label>
+							<input id="ende" name="ende" type="datetime-local" required th:value="${ende}">
+						</div>
+					</div>
+					<fieldset class="optionen-gruppe">
+						<legend>Antwortoptionen (mindestens 2)</legend>
+						<div id="optionen-liste">
+							<div class="option-zeile" th:each="optionWert : ${optionen}">
+								<input name="optionen" type="text" placeholder="Antwortoption" th:value="${optionWert}">
+							</div>
+						</div>
+						<button class="schaltflaeche schaltflaeche-sekundaer" type="button"
+						        hx-get="/abstimmungen/neu/option-feld"
+						        hx-target="#optionen-liste"
+						        hx-swap="beforeend">
+							Weitere Option hinzufügen
+						</button>
+					</fieldset>
+					<div class="formular-aktionen">
+						<button class="schaltflaeche schaltflaeche-primar" type="submit" hx-disable>Abstimmung erstellen</button>
+						<a class="schaltflaeche schaltflaeche-sekundaer" href="/">Abbrechen</a>
+					</div>
+				</form>
+			</div>
+		</section>
+
+		<th:block th:if="${false}">
+			<div class="option-zeile" th:fragment="option-zeile">
+				<input name="optionen" type="text" placeholder="Antwortoption" th:value="${wert}">
+			</div>
+		</th:block>
+
+		<p class="zurueck-link"><a href="/">Zurück zur Übersicht</a></p>
+	</main>
+
+	<footer class="fusszeile">
+		<div class="fusszeile-inhalt">Votee – Digitales Abstimmungssystem</div>
+	</footer>
+</body>
+</html>

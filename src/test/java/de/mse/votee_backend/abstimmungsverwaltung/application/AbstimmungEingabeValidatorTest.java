@@ -1,9 +1,14 @@
 package de.mse.votee_backend.abstimmungsverwaltung.application;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.Normalizer;
+import java.time.LocalDateTime;
+
+import de.mse.votee_backend.abstimmungsverwaltung.domain.model.AbstimmungsregelVerletztException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -274,6 +279,33 @@ class AbstimmungEingabeValidatorTest {
         @DisplayName("Negativ: falsches Format")
         void falschesFormatIstUngueltig(String datum) {
             assertFalse(validator.istGueltigesDatum(datum));
+        }
+    }
+
+    // =====================================================================
+    @Nested
+    @DisplayName("parseDatum(String)")
+    class ParseDatum {
+
+        @Test
+        @DisplayName("Happy Path: parst gültiges Datum inklusive Schaltjahr korrekt")
+        void parstGueltigesDatum() {
+            assertEquals(LocalDateTime.of(2027, 3, 15, 14, 30), validator.parseDatum("15.03.2027 14:30"));
+            assertEquals(LocalDateTime.of(2028, 2, 29, 0, 0), validator.parseDatum("29.02.2028 00:00"));
+        }
+
+        @ParameterizedTest(name = "ungültig: \"{0}\"")
+        @NullAndEmptySource
+        @ValueSource(strings = {
+                "31.04.2027 10:00",
+                "29.02.2027 10:00",
+                "2027-03-15 14:30",
+                "15.03.1999 14:30",
+                "ungueltig"
+        })
+        @DisplayName("Negativ: ungültiges Datum wirft AbstimmungsregelVerletztException")
+        void ungueltigesDatumWirftException(String datum) {
+            assertThrows(AbstimmungsregelVerletztException.class, () -> validator.parseDatum(datum));
         }
     }
 }

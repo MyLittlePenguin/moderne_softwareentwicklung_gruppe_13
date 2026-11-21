@@ -35,7 +35,18 @@ class MainTest {
         try (Http1ClientResponse response = client.get("/").request()) {
             assertThat(response.status(), is(Status.OK_200));
             assertThat(response.headers().get(HeaderNames.CONTENT_TYPE).get(), containsString("text/html"));
-            assertThat(response.as(String.class), containsString("<h1>Votee</h1>"));
+            String html = response.as(String.class);
+            assertThat(html, containsString("<h1>Votee</h1>"));
+            assertThat(html, containsString("href=\"/css/style.css\""));
+        }
+    }
+
+    @Test
+    void stylesheetIsServed() {
+        try (Http1ClientResponse response = client.get("/css/style.css").request()) {
+            assertThat(response.status(), is(Status.OK_200));
+            assertThat(response.headers().get(HeaderNames.CONTENT_TYPE).get(), containsString("text/css"));
+            assertThat(response.as(String.class), containsString("--farbe-primar"));
         }
     }
 

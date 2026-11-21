@@ -1,0 +1,569 @@
+/* ==========================================================================
+   Votee – Gestaltungsentwurf: schlichte, seriöse Benutzeroberfläche
+   ========================================================================== */
+
+:root {
+	--farbe-hintergrund: #f4f6f9;
+	--farbe-flaeche: #ffffff;
+	--farbe-flaeche-dezent: #f8fafc;
+	--farbe-text: #1a2430;
+	--farbe-text-sekundaer: #516070;
+	--farbe-primar: #1b3a5c;
+	--farbe-primar-hover: #132b45;
+	--farbe-akzent: #2a5988;
+	--farbe-rahmen: #d5dde5;
+	--farbe-rahmen-stark: #9aa8b8;
+	--farbe-fehler-text: #8b1d1d;
+	--farbe-fehler-hintergrund: #fdf2f2;
+	--farbe-fehler-rahmen: #c53030;
+
+	--schriftart: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--schriftart-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+	--radius-klein: 4px;
+	--radius-mittel: 6px;
+	--schatten-karte: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+	--breite-inhalt: 880px;
+	--breite-formular: 660px;
+	--breite-schmal: 460px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--schriftart);
+	line-height: 1.55;
+	color: var(--farbe-text);
+	background-color: var(--farbe-hintergrund);
+}
+
+a {
+	color: var(--farbe-akzent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+a:hover {
+	color: var(--farbe-primar-hover);
+}
+
+:focus-visible {
+	outline: 2px solid var(--farbe-akzent);
+	outline-offset: 2px;
+}
+
+/* ---------- Kopfzeile & Navigation ---------- */
+
+.kopfzeile {
+	background-color: var(--farbe-flaeche);
+	border-top: 3px solid var(--farbe-primar);
+	border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+.kopfzeile-inhalt {
+	max-width: var(--breite-inhalt);
+	margin: 0 auto;
+	padding: 0.9rem 1.25rem;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1.5rem;
+}
+
+.marke {
+	display: flex;
+	align-items: baseline;
+	gap: 0.65rem;
+}
+
+.marke-link {
+	text-decoration: none;
+	color: var(--farbe-primar);
+}
+
+.marke-link:hover {
+	color: var(--farbe-primar-hover);
+}
+
+.marke h1,
+.marke-name {
+	margin: 0;
+	font-size: 1.45rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+}
+
+.marke-untertitel {
+	font-size: 0.85rem;
+	color: var(--farbe-text-sekundaer);
+	border-left: 1px solid var(--farbe-rahmen);
+	padding-left: 0.65rem;
+}
+
+.hauptnavigation {
+	display: flex;
+	align-items: center;
+}
+
+.nav-gruppe {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.65rem 0.85rem;
+}
+
+.nutzer-hinweis {
+	font-size: 0.9rem;
+	color: var(--farbe-text-sekundaer);
+}
+
+.nutzer-hinweis strong {
+	color: var(--farbe-text);
+	font-weight: 600;
+}
+
+.inline-formular {
+	display: inline;
+	margin: 0;
+}
+
+/* ---------- Seitenlayout ---------- */
+
+.seite {
+	width: 100%;
+	max-width: var(--breite-inhalt);
+	margin: 0 auto;
+	padding: 2rem 1.25rem 3rem;
+	flex: 1 0 auto;
+}
+
+.seite-formular {
+	max-width: var(--breite-formular);
+}
+
+.seite-schmal {
+	max-width: var(--breite-schmal);
+}
+
+.seitenkopf {
+	margin-bottom: 1.5rem;
+}
+
+.seitenkopf h2 {
+	margin: 0 0 0.25rem;
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: -0.015em;
+	color: var(--farbe-text);
+}
+
+.seiten-beschreibung {
+	margin: 0;
+	font-size: 0.95rem;
+	color: var(--farbe-text-sekundaer);
+}
+
+/* ---------- Karten & Listen ---------- */
+
+.karte {
+	background-color: var(--farbe-flaeche);
+	border: 1px solid var(--farbe-rahmen);
+	border-radius: var(--radius-mittel);
+	box-shadow: var(--schatten-karte);
+	padding: 1.5rem;
+}
+
+.leerzustand {
+	background-color: var(--farbe-flaeche);
+	border: 1px solid var(--farbe-rahmen);
+	border-radius: var(--radius-mittel);
+	padding: 2.25rem 1.5rem;
+	text-align: center;
+	color: var(--farbe-text-sekundaer);
+}
+
+.leerzustand p {
+	margin: 0;
+}
+
+.abstimmungen-liste {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.abstimmung-karte {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.abstimmung-titel {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: var(--farbe-primar);
+	line-height: 1.3;
+}
+
+.abstimmung-beschreibung {
+	margin: 0;
+	color: var(--farbe-text);
+}
+
+.abstimmung-zeitraum {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--farbe-text-sekundaer);
+	font-variant-numeric: tabular-nums;
+	padding-top: 0.65rem;
+	border-top: 1px solid var(--farbe-rahmen);
+}
+
+.meta-label {
+	font-weight: 600;
+	color: var(--farbe-text);
+}
+
+.optionen-bereich {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+}
+
+.optionen-bereich .meta-label {
+	padding: 0;
+	margin-bottom: 0.2rem;
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--farbe-text-sekundaer);
+}
+
+.optionen-liste {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.option-eintrag {
+	margin: 0;
+	padding: 0;
+}
+
+.option-auswahl {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 0.35rem 0.5rem;
+	border-radius: var(--radius-klein);
+	font-size: 0.95rem;
+	color: var(--farbe-text);
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.option-auswahl:hover {
+	background-color: var(--farbe-flaeche-dezent);
+}
+
+.option-auswahl input[type="radio"] {
+	margin: 0;
+	width: 1.05rem;
+	height: 1.05rem;
+	flex-shrink: 0;
+	accent-color: var(--farbe-primar);
+	cursor: pointer;
+}
+
+.option-auswahl-inaktiv,
+.option-auswahl:has(input[type="radio"]:disabled) {
+	color: var(--farbe-text-sekundaer);
+	cursor: default;
+}
+
+.option-auswahl-inaktiv:hover,
+.option-auswahl:has(input[type="radio"]:disabled):hover {
+	background-color: transparent;
+}
+
+.option-auswahl input[type="radio"]:disabled {
+	cursor: default;
+	opacity: 0.6;
+}
+
+/* ---------- Schaltflächen ---------- */
+
+.schaltflaeche,
+button[type="submit"],
+button[type="button"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	font-family: inherit;
+	font-size: 0.92rem;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 0.6rem 1.05rem;
+	border-radius: var(--radius-klein);
+	border: 1px solid transparent;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.schaltflaeche-primar {
+	background-color: var(--farbe-primar);
+	color: #ffffff;
+	border-color: var(--farbe-primar);
+}
+
+.schaltflaeche-primar:hover {
+	background-color: var(--farbe-primar-hover);
+	border-color: var(--farbe-primar-hover);
+	color: #ffffff;
+}
+
+.schaltflaeche-sekundaer {
+	background-color: var(--farbe-flaeche);
+	color: var(--farbe-text);
+	border-color: var(--farbe-rahmen-stark);
+}
+
+.schaltflaeche-sekundaer:hover {
+	background-color: var(--farbe-flaeche-dezent);
+	border-color: var(--farbe-primar);
+	color: var(--farbe-primar);
+}
+
+.schaltflaeche-vollbreite {
+	width: 100%;
+}
+
+button:disabled,
+button[disabled] {
+	opacity: 0.6;
+	cursor: wait;
+}
+
+/* ---------- Formulare ---------- */
+
+.formular-karte {
+	padding: 1.75rem 2rem;
+}
+
+.formular-titel {
+	margin: 0 0 0.35rem;
+	font-size: 1.4rem;
+	font-weight: 600;
+	color: var(--farbe-primar);
+	line-height: 1.25;
+}
+
+.formular-einleitung {
+	margin: 0 0 1.5rem;
+	font-size: 0.92rem;
+	color: var(--farbe-text-sekundaer);
+}
+
+.formular {
+	display: flex;
+	flex-direction: column;
+	gap: 1.15rem;
+}
+
+.formular-zeile {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.formular-feld {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.formular-feld label {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--farbe-text);
+}
+
+.formular-feld input[type="text"],
+.formular-feld input[type="password"],
+.formular-feld input[type="datetime-local"],
+.formular-feld textarea,
+.option-zeile input[type="text"] {
+	width: 100%;
+	font-family: inherit;
+	font-size: 0.95rem;
+	line-height: 1.45;
+	color: var(--farbe-text);
+	background-color: var(--farbe-flaeche);
+	border: 1px solid var(--farbe-rahmen-stark);
+	border-radius: var(--radius-klein);
+	padding: 0.55rem 0.75rem;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.formular-feld input[type="datetime-local"] {
+	font-variant-numeric: tabular-nums;
+}
+
+.formular-feld textarea {
+	resize: vertical;
+	min-height: 5.5rem;
+}
+
+.formular-feld input:focus,
+.formular-feld textarea:focus,
+.option-zeile input:focus {
+	outline: none;
+	border-color: var(--farbe-primar);
+	box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.16);
+}
+
+.formular-feld input::placeholder,
+.option-zeile input::placeholder {
+	color: #8292a2;
+}
+
+.eingabe-code {
+	font-family: var(--schriftart-mono);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.25em;
+	font-size: 1.05rem;
+	max-width: 11rem;
+}
+
+.optionen-gruppe {
+	margin: 0;
+	padding: 1rem 1.1rem 1.15rem;
+	border: 1px solid var(--farbe-rahmen);
+	border-radius: var(--radius-klein);
+	background-color: var(--farbe-flaeche-dezent);
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.optionen-gruppe legend {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--farbe-text);
+	padding: 0 0.35rem;
+}
+
+#optionen-liste {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.option-zeile {
+	display: flex;
+	align-items: center;
+}
+
+.optionen-gruppe .schaltflaeche-sekundaer {
+	align-self: flex-start;
+}
+
+.formular-aktionen {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+	padding-top: 0.5rem;
+}
+
+.zurueck-link {
+	margin: 1.25rem 0 0;
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+/* ---------- Hinweise & Fehlermeldungen ---------- */
+
+.fehler {
+	margin: 0 0 1.25rem;
+	padding: 0.75rem 1rem;
+	font-size: 0.92rem;
+	color: var(--farbe-fehler-text);
+	background-color: var(--farbe-fehler-hintergrund);
+	border: 1px solid #f5c2c2;
+	border-left: 4px solid var(--farbe-fehler-rahmen);
+	border-radius: var(--radius-klein);
+}
+
+/* ---------- Fußzeile ---------- */
+
+.fusszeile {
+	border-top: 1px solid var(--farbe-rahmen);
+	background-color: var(--farbe-flaeche);
+	margin-top: auto;
+}
+
+.fusszeile-inhalt {
+	max-width: var(--breite-inhalt);
+	margin: 0 auto;
+	padding: 0.9rem 1.25rem;
+	font-size: 0.82rem;
+	color: var(--farbe-text-sekundaer);
+}
+
+/* ---------- Responsive Anpassungen ---------- */
+
+@media (max-width: 640px) {
+	.kopfzeile-inhalt {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.marke-untertitel {
+		display: none;
+	}
+
+	.seite {
+		padding: 1.25rem 1rem 2rem;
+	}
+
+	.formular-karte {
+		padding: 1.25rem;
+	}
+
+	.formular-zeile {
+		grid-template-columns: 1fr;
+	}
+
+	.formular-aktionen .schaltflaeche {
+		width: 100%;
+	}
+}
