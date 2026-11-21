@@ -209,7 +209,26 @@ hinschauen sollte, die Bewertung braucht aber fachliches Verständnis.
 
 ## 4. Frontend-Entwicklung und Erweiterung der Anwendung
 
-**LLM-Einsatz:**
+**Bearbeitung:** Ronny
+
+**LLM-Einsatz:** Hierfür habe ich Antigravity von Google mit dem Default-Model
+(Gemini 4 Neon) genutzt. Ich habe mir, weil mein Kontingent nicht ausgereicht
+hat jetzt doch ein Abo für dieses Modul abgeschlossen.
+
+Meine LLM Interaktionen befinden sich grundsätzlich in dem LLM-Log-Verzeichnis.
+Leider hab ich die für diese Aufgabe vergessen aufzeichnen zu lassen. Ich habe
+versucht diese vom LLM wiederherzustellen zu lassen, kann aber nicht garantieren, 
+dass das vollständig gelungen ist.
+
+Grundsätzlich hat die Bearbeitung auch relativ gut funktioniert. Einige Male
+musste ich nacharbeiten lassen, da das Ergebnis nicht ganz meinen Vorstellungen
+entsprochen hat, das waren allerdings Kleinigkeiten, die relativ schnell
+erledigt worden sind. 
+
+Der UI-Vorschlag vom LLM hatte mir ganz gut gefallen. Ich habe auch hier nur
+wenige Anpassungen vornehmen lassen. Der Ablauf kann gut anhand der Commits
+nachverfolgt werden, da nach jedem LLM-Prompt ein Commit durchgeführt worden
+ist.
 
 ## 5. Reflexion zum Einsatz von Metriken und LLM
 
