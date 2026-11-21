@@ -8,3 +8,16 @@ db:
     url: jdbc:h2:file:./data/votee;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=FALSE
     username: sa
     password:
+
+# Entwicklungs-Standardkonten (für Produktivbetrieb über Umgebungsvariablen überschreiben)
+votee:
+  auth:
+    session-dauer-minuten: 60
+    admin:
+      id: admin-1
+      benutzername: admin
+      passwort: admin-dev-password
+    buerger:
+      id: buerger-1
+      benutzername: buerger
+      passwort: buerger-dev-password
